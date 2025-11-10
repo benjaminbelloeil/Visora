@@ -63,7 +63,7 @@ struct PlaceDetailCard: View {
                     if let category = place.category {
                         Text(category)
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.subTextColor)
                     }
                 }
                 
@@ -80,7 +80,7 @@ struct PlaceDetailCard: View {
             if let description = place.description {
                 Text(description)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.subTextColor)
                     .lineLimit(3)
             }
             
@@ -88,7 +88,7 @@ struct PlaceDetailCard: View {
                 Text("View Details")
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(.actionColor)
             }
         }
         .padding()

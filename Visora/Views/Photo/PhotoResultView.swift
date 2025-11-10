@@ -29,10 +29,10 @@ struct PhotoResultView: View {
                             Label("AI Analysis", systemImage: "sparkles")
                                 .font(.headline)
                             Text(aiDescription)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.subTextColor)
                         }
                         .padding()
-                        .background(Color.accentColor.opacity(0.1))
+                        .background(Color.actionColor.opacity(0.1))
                         .cornerRadius(12)
                     }
                     
@@ -44,7 +44,7 @@ struct PhotoResultView: View {
                             VStack(alignment: .leading) {
                                 Text("Location")
                                     .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.subTextColor)
                                 Text(locationName)
                                     .font(.body)
                             }
@@ -61,7 +61,7 @@ struct PhotoResultView: View {
                         VStack(alignment: .leading) {
                             Text("Date")
                                 .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.subTextColor)
                             Text(photoEntry.dateTaken, style: .date)
                                 .font(.body)
                         }

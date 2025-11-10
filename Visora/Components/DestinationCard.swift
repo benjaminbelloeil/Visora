@@ -34,14 +34,14 @@ struct DestinationCard: View {
                         .font(.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.accentColor.opacity(0.1))
-                        .foregroundColor(.accentColor)
+                        .background(Color.actionColor.opacity(0.1))
+                        .foregroundColor(.actionColor)
                         .cornerRadius(4)
                 }
                 
                 Text(destination.description)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.subTextColor)
                     .lineLimit(2)
             }
             .padding()

@@ -50,13 +50,13 @@ struct CalendarDayDetailView: View {
                                         .font(.caption)
                                         .lineLimit(1)
                                 }
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.subTextColor)
                             }
                             
                             if let aiDescription = photo.aiDescription {
                                 Text(aiDescription)
                                     .font(.caption2)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.subTextColor)
                                     .lineLimit(2)
                             }
                         }

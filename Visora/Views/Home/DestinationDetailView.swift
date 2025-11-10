@@ -34,7 +34,7 @@ struct DestinationDetailView: View {
                         Image(systemName: "mappin.and.ellipse")
                         Text(destination.country)
                     }
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.subTextColor)
                     
                     Divider()
                     
@@ -43,7 +43,7 @@ struct DestinationDetailView: View {
                         .font(.headline)
                     
                     Text(destination.description)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.subTextColor)
                     
                     // Additional details
                     if let category = destination.category {
@@ -52,7 +52,7 @@ struct DestinationDetailView: View {
                             Text(category)
                         }
                         .padding(.top, 8)
-                        .foregroundColor(.accentColor)
+                        .foregroundColor(.actionColor)
                     }
                 }
                 .padding()

@@ -17,7 +17,7 @@ struct PlaceAnnotation: View {
                 .font(.title3)
                 .foregroundColor(.white)
                 .padding(8)
-                .background(Color.accentColor)
+                .background(Color.actionColor)
                 .clipShape(Circle())
                 .shadow(radius: 4)
         }

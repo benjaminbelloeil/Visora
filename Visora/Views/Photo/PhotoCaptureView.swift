@@ -27,7 +27,7 @@ struct PhotoCaptureView: View {
                     VStack(spacing: 40) {
                         Image(systemName: "camera.fill")
                             .font(.system(size: 80))
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(.actionColor)
                         
                         Text("Capture Your Adventure")
                             .font(.title2)
@@ -35,7 +35,7 @@ struct PhotoCaptureView: View {
                         
                         Text("Take a photo or choose from your library to identify landmarks and destinations")
                             .multilineTextAlignment(.center)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.subTextColor)
                             .padding(.horizontal, 40)
                         
                         VStack(spacing: 16) {

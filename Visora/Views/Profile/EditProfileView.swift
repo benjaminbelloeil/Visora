@@ -65,7 +65,7 @@ struct EditProfileView: View {
     private var profileImagePicker: some View {
         PhotosPicker(selection: $selectedItem, matching: .images) {
             Circle()
-                .fill(Color.accentColor.opacity(0.3))
+                .fill(Color.actionColor.opacity(0.3))
                 .frame(width: 100, height: 100)
                 .overlay {
                     if let selectedImage = selectedImage {
@@ -81,7 +81,7 @@ struct EditProfileView: View {
                     } else {
                         Image(systemName: "person.fill")
                             .font(.system(size: 50))
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(.actionColor)
                     }
                 }
                 .overlay(alignment: .bottomTrailing) {
@@ -89,7 +89,7 @@ struct EditProfileView: View {
                         .font(.system(size: 16))
                         .foregroundColor(.white)
                         .padding(8)
-                        .background(Color.accentColor)
+                        .background(Color.actionColor)
                         .clipShape(Circle())
                 }
         }

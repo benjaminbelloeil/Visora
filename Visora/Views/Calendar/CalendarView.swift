@@ -47,9 +47,9 @@ struct CalendarView: View {
                         VStack(spacing: 16) {
                             Image(systemName: "photo.on.rectangle.angled")
                                 .font(.system(size: 60))
-                                .foregroundColor(.gray)
+                                .foregroundColor(.subTextColor)
                             Text("No photos for this date")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.subTextColor)
                         }
                         .frame(maxHeight: .infinity)
                     }
@@ -57,9 +57,9 @@ struct CalendarView: View {
                     VStack(spacing: 16) {
                         Image(systemName: "calendar")
                             .font(.system(size: 60))
-                            .foregroundColor(.gray)
+                            .foregroundColor(.subTextColor)
                         Text("Select a date to view photos")
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.subTextColor)
                     }
                     .frame(maxHeight: .infinity)
                 }

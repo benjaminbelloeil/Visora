@@ -39,7 +39,7 @@ struct PlaceDetailView: View {
                             Image(systemName: "tag.fill")
                             Text(category)
                         }
-                        .foregroundColor(.accentColor)
+                        .foregroundColor(.actionColor)
                     }
                     
                     Divider()
@@ -50,7 +50,7 @@ struct PlaceDetailView: View {
                             Text("About")
                                 .font(.headline)
                             Text(description)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.subTextColor)
                         }
                     }
                     
@@ -63,7 +63,7 @@ struct PlaceDetailView: View {
                                 Image(systemName: "mappin.and.ellipse")
                                 Text(address)
                             }
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.subTextColor)
                         }
                     }
                     

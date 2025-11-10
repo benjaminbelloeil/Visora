@@ -18,7 +18,7 @@ struct ProfileView: View {
                     HStack(spacing: 16) {
                         // Profile image
                         Circle()
-                            .fill(Color.accentColor.opacity(0.3))
+                            .fill(Color.actionColor.opacity(0.3))
                             .frame(width: 80, height: 80)
                             .overlay {
                                 if let profileImage = viewModel.userProfile.profileImage {
@@ -29,7 +29,7 @@ struct ProfileView: View {
                                 } else {
                                     Image(systemName: "person.fill")
                                         .font(.system(size: 40))
-                                        .foregroundColor(.accentColor)
+                                        .foregroundColor(.actionColor)
                                 }
                             }
                         
@@ -41,7 +41,7 @@ struct ProfileView: View {
                             if let bio = viewModel.userProfile.bio {
                                 Text(bio)
                                     .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.subTextColor)
                             }
                         }
                     }
@@ -52,7 +52,7 @@ struct ProfileView: View {
                 Section {
                     Text("Member since \(viewModel.userProfile.joinDate.formatted(date: .abbreviated, time: .omitted))")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.subTextColor)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.vertical, 8)
                 }
@@ -99,7 +99,7 @@ struct StatView: View {
                 .fontWeight(.bold)
             Text(title)
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(.subTextColor)
         }
         .frame(maxWidth: .infinity)
     }
