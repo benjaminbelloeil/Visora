@@ -9,37 +9,53 @@ import SwiftUI
 
 struct OnboardingPage1View: View {
     var body: some View {
-        ZStack {
-            // Background gradient or image
-            LinearGradient(
-                colors: [.blue.opacity(0.6), .purple.opacity(0.6)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+        VStack(spacing: 0) {
+            // Image at the top - extends to top edge
+            Image("Onboarding1")
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity)
+                .frame(height: UIScreen.main.bounds.height * 0.54)
+                .clipShape(BottomRoundedRectangle(radius: 24))
             
-            VStack(spacing: 30) {
-                Spacer()
+            // Text content
+            VStack(spacing: 24) {
+                VStack(spacing: 4) {
+                    Text("Life is short and the")
+                        .font(.custom("Montserrat", size: 38).weight(.black))
+                        .foregroundColor(.textColor)
+                    
+                    HStack(spacing: 8) {
+                        Text("world is")
+                            .font(.custom("Montserrat", size: 38).weight(.black))
+                            .foregroundColor(.textColor)
+                        
+                        ZStack(alignment: .bottom) {
+                            Text("wide")
+                                .font(.custom("Montserrat", size: 38).weight(.black))
+                                .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.2))
+                            
+                            CurvedUnderline()
+                                .fill(Color(red: 1.0, green: 0.45, blue: 0.2))
+                                .frame(width: 90, height: 9)
+                                .offset(y: 21)
+                        }
+                    }
+                }
+                .padding(.top, 40)
                 
-                Image(systemName: "camera.fill")
-                    .font(.system(size: 100))
-                    .foregroundColor(.white)
-                
-                Text("Capture Your Journey")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
+                Text("At Friends tours and travel, we customize\nreliable and trutworthy educational tours\nto destinations all over the world")
+                    .font(.custom("Nunito Sans", size: 17))
+                    .foregroundColor(.subTextColor)
                     .multilineTextAlignment(.center)
-                
-                Text("Take photos of your travels and let AI identify landmarks and destinations")
-                    .font(.title3)
-                    .foregroundColor(.white.opacity(0.9))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
-                
-                Spacer()
+                    .padding(.top, 16)
             }
+            .padding(.horizontal, 20)
+            
+            Spacer()
         }
+        .background(Color.white)
+        .ignoresSafeArea(edges: .top)
     }
 }
 

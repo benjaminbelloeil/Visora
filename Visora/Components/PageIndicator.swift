@@ -14,12 +14,21 @@ struct PageIndicator: View {
     var body: some View {
         HStack(spacing: 8) {
             ForEach(0..<pageCount, id: \.self) { index in
-                Circle()
-                    .fill(currentPage == index ? Color.actionColor : Color.gray.opacity(0.5))
-                    .frame(width: currentPage == index ? 10 : 8, height: currentPage == index ? 10 : 8)
-                    .animation(.easeInOut, value: currentPage)
+                if currentPage == index {
+                    // Active indicator - elongated capsule
+                    Capsule()
+                        .fill(Color.primaryColor)
+                        .frame(width: 30, height: 8)
+                        .transition(.scale)
+                } else {
+                    // Inactive indicator - small circle
+                    Circle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 8, height: 8)
+                }
             }
         }
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentPage)
     }
 }
 
