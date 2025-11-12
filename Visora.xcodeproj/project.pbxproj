@@ -10,9 +10,22 @@
 		D98B93C62EBDF48100A9EA35 /* Visora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Visora.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D9D5875B2EC54CF8007E8856 /* Exceptions for "Visora" folder in "Visora" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D98B93C52EBDF48100A9EA35 /* Visora */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D98B93C82EBDF48100A9EA35 /* Visora */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D9D5875B2EC54CF8007E8856 /* Exceptions for "Visora" folder in "Visora" target */,
+			);
 			path = Visora;
 			sourceTree = "<group>";
 		};
@@ -256,6 +269,9 @@
 				DEVELOPMENT_TEAM = DQQALW53ZU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Visora/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to capture photos of landmarks and destinations";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to select images for landmark identification";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -288,6 +304,9 @@
 				DEVELOPMENT_TEAM = DQQALW53ZU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Visora/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to capture photos of landmarks and destinations";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to select images for landmark identification";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
