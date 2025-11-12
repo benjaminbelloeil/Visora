@@ -6,35 +6,121 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
+    @State private var showNotifications = false
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    // Featured section
-                    Text("Discover")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .padding(.horizontal)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 32) {
+                    // User Profile Header
+                    UserProfileHeader(userName: "Benjamin", hasNotification: true) {
+                        showNotifications = true
+                    }
+                    .padding(.horizontal, 13)
+                    .padding(.top, -50)
                     
-                    // Destination cards
-                    ForEach(viewModel.featuredDestinations) { destination in
-                        NavigationLink(destination: DestinationDetailView(destination: destination)) {
-                            DestinationCard(destination: destination)
-                                .padding(.horizontal)
+                    // Hero Title Section
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Explore the")
+                            .font(.custom("Montserrat", size: 42))
+                            .fontWeight(.medium)
+                            .foregroundColor(.textColor)
+                        
+                        HStack(spacing: 12) {
+                            Text("Beautiful")
+                                .font(.custom("Montserrat-Black", size: 42))
+                                .foregroundColor(.textColor)
+                            
+                            ZStack(alignment: .bottom) {
+                                Text("world!")
+                                    .font(.custom("Montserrat", size: 42))
+                                    .fontWeight(.black)
+                                    .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.2))
+                                
+                                CurvedUnderline()
+                                    .fill(Color(red: 1.0, green: 0.45, blue: 0.2))
+                                    .frame(width: 110, height: 10)
+                                    .offset(y: 19)
+                            }
                         }
-                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    // Best Destination Section
+                    VStack(alignment: .leading, spacing: 20) {
+                        // Section header
+                        HStack {
+                            Text("Best Destination")
+                                .font(.custom("Montserrat-Black", size: 22))
+                                .foregroundColor(.textColor)
+                            
+                            Spacer()
+                            
+                            Button {
+                                // View all action
+                            } label: {
+                                Text("View all")
+                                    .font(.custom("Nunito Sans", size: 16))
+                                    .fontWeight(.medium)
+                                    .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.2))
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        
+                        // Horizontal scrolling destinations
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 20) {
+                                ForEach(viewModel.featuredDestinations) { destination in
+                                    NavigationLink(destination: DestinationDetailView(destination: destination)) {
+                                        DestinationCard(destination: destination)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.leading, 5)
+                            .padding(.trailing, 20)
+                            .padding(.bottom, 30)
+                        }
+                        .padding(.leading, 0)
+                    }
+                    
+                    // Popular Locations Section
+                    VStack(alignment: .leading, spacing: 20) {
+                        // Section header
+                        Text("Popular Locations")
+                            .font(.custom("Montserrat-Black", size: 22))
+                            .foregroundColor(.textColor)
+                            .padding(.horizontal, 20)
+                        
+                        // Map preview
+                        Map(initialPosition: .region(MKCoordinateRegion(
+                            center: CLLocationCoordinate2D(latitude: 48.8566, longitude: 2.3522),
+                            span: MKCoordinateSpan(latitudeDelta: 15, longitudeDelta: 15)
+                        ))) {
+                            ForEach(viewModel.featuredDestinations) { destination in
+                                Marker(destination.name, coordinate: destination.coordinate)
+                                    .tint(Color(red: 1.0, green: 0.45, blue: 0.2))
+                            }
+                        }
+                        .frame(height: 200)
+                        .cornerRadius(20)
+                        .padding(.horizontal, 20)
                     }
                 }
-                .padding(.vertical)
+                .padding(.vertical, 8)
             }
-            .navigationTitle("Explore")
-            .navigationBarTitleDisplayMode(.inline)
+            .background(Color.white)
             .onAppear {
                 viewModel.loadFeaturedDestinations()
+            }
+            .sheet(isPresented: $showNotifications) {
+                NotificationsView()
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
             }
         }
     }
