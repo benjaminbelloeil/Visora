@@ -232,6 +232,8 @@ class PhotoViewModel: ObservableObject {
     
     // MARK: - Vision Framework Analysis (Fallback & Enhancement)
     
+    // MARK: - Vision Framework Analysis (Fallback & Enhancement)
+    
     private func analyzeImageWithVision(_ image: UIImage) async -> (location: String, locationName: String, caption: String, description: String) {
         guard let cgImage = image.cgImage else {
             return getDefaultAnalysis()
@@ -240,33 +242,16 @@ class PhotoViewModel: ObservableObject {
         let requestHandler = VNImageRequestHandler(cgImage: cgImage, options: [:])
         
         var detectedScenes: [String] = []
-        var confidence: Float = 0.0
         
         // Scene Classification Request
         let sceneRequest = VNClassifyImageRequest { request, error in
             guard let observations = request.results as? [VNClassificationObservation] else { return }
-            
             detectedScenes = observations.prefix(5).map { $0.identifier }
-            
-            if let topObservation = observations.first {
-                confidence = topObservation.confidence
-            }
         }
-        
-        // Text Detection Request
-        var detectedText: [String] = []
-        let textRequest = VNRecognizeTextRequest { request, error in
-            guard let observations = request.results as? [VNRecognizedTextObservation] else { return }
-            
-            detectedText = observations.compactMap { observation in
-                observation.topCandidates(1).first?.string
-            }.prefix(10).map { $0 }
-        }
-        textRequest.recognitionLevel = .accurate
         
         // Perform requests
         do {
-            try requestHandler.perform([sceneRequest, textRequest])
+            try requestHandler.perform([sceneRequest])
         } catch {
             print("Vision request failed: \(error)")
             return getDefaultAnalysis()
@@ -274,144 +259,40 @@ class PhotoViewModel: ObservableObject {
         
         return generateAnalysisFromDetections(
             scenes: detectedScenes,
-            text: detectedText,
-            confidence: confidence
+            confidence: 0.0
         )
     }
     
     private func generateAnalysisFromDetections(
         scenes: [String],
-        text: [String],
         confidence: Float
     ) -> (location: String, locationName: String, caption: String, description: String) {
         
-        // Check for landmarks in text
-        if let landmark = detectLandmarkFromText(text) {
-            return getLandmarkInfo(landmark)
-        }
-        
-        // Analyze scenes
-        let sceneType = categorizeScene(scenes)
-        
-        var locationName = sceneType.name
-        var location = sceneType.location
-        var caption = sceneType.caption
-        var description = sceneType.description
-        
-        // Add detected text if meaningful
-        let meaningfulText = text.filter { $0.count > 2 && $0.count < 50 }
-        if !meaningfulText.isEmpty {
-            description += "\n\nDetected text: " + meaningfulText.prefix(5).joined(separator: ", ")
-        }
+        // Simplified fallback - Gemini handles the detailed analysis
+        let locationName = scenes.first?.replacingOccurrences(of: "_", with: " ").capitalized ?? "Unknown Location"
+        let location = "Location not determined"
+        let caption = "Captured moment"
+        let description = "This image has been captured. For detailed analysis, please ensure Gemini API is configured."
         
         return (location: location, locationName: locationName, caption: caption, description: description)
     }
     
     private func categorizeScene(_ scenes: [String]) -> (name: String, location: String, caption: String, description: String) {
-        let sceneLower = scenes.joined(separator: " ").lowercased()
-        
-        if sceneLower.contains("tower") || sceneLower.contains("monument") {
-            return (
-                name: "Historic Monument",
-                location: "Historic Site",
-                caption: "Architectural landmark",
-                description: "This image shows a prominent monument or tower structure with historical significance."
-            )
-        } else if sceneLower.contains("building") || sceneLower.contains("architecture") {
-            return (
-                name: "Architectural Structure",
-                location: "Urban Area",
-                caption: "Notable architecture",
-                description: "This image captures significant architectural design and construction."
-            )
-        } else if sceneLower.contains("mountain") || sceneLower.contains("landscape") {
-            return (
-                name: "Mountain Landscape",
-                location: "Natural Environment",
-                caption: "Scenic mountain view",
-                description: "This image showcases beautiful natural mountain scenery."
-            )
-        } else if sceneLower.contains("beach") || sceneLower.contains("coast") || sceneLower.contains("ocean") {
-            return (
-                name: "Coastal Area",
-                location: "Waterfront",
-                caption: "Coastal scenery",
-                description: "This image captures stunning coastal or beach landscape."
-            )
-        } else if sceneLower.contains("city") || sceneLower.contains("urban") {
-            return (
-                name: "Urban Scene",
-                location: "City Center",
-                caption: "City landscape",
-                description: "This image shows an urban environment with city features."
-            )
-        } else {
-            return (
-                name: scenes.first?.capitalized ?? "Interesting Location",
-                location: "Unknown",
-                caption: "Scenic location",
-                description: "This image captures an interesting location worth documenting."
-            )
-        }
+        return (
+            name: scenes.first?.capitalized.replacingOccurrences(of: "_", with: " ") ?? "Interesting Location",
+            location: "Unknown",
+            caption: "Scenic location",
+            description: "This image captures an interesting location worth documenting."
+        )
     }
     
     private func detectLandmarkFromText(_ text: [String]) -> String? {
-        let landmarks = [
-            "eiffel": "Eiffel Tower",
-            "tower": "Historic Tower",
-            "colosseum": "Colosseum",
-            "parthenon": "Parthenon",
-            "big ben": "Big Ben",
-            "statue of liberty": "Statue of Liberty",
-            "taj mahal": "Taj Mahal",
-            "notre dame": "Notre-Dame",
-            "louvre": "Louvre Museum",
-            "acropolis": "Acropolis",
-            "tower bridge": "Tower Bridge",
-            "brandenburg gate": "Brandenburg Gate",
-            "sagrada familia": "Sagrada Familia"
-        ]
-        
-        for textLine in text {
-            let lowercased = textLine.lowercased()
-            for (key, value) in landmarks {
-                if lowercased.contains(key) {
-                    return value
-                }
-            }
-        }
-        
+        // Gemini handles landmark detection, so this is just a minimal fallback
         return nil
     }
     
     private func getLandmarkInfo(_ name: String) -> (location: String, locationName: String, caption: String, description: String) {
-        let landmarks: [String: (location: String, caption: String, description: String)] = [
-            "Eiffel Tower": (
-                "Paris, France",
-                "Iconic iron tower",
-                "The Eiffel Tower is a 330-meter wrought-iron lattice tower, built in 1889 as the entrance arch to the World's Fair."
-            ),
-            "Colosseum": (
-                "Rome, Italy",
-                "Ancient amphitheater",
-                "The Colosseum is an ancient amphitheater built in 70-80 AD, used for gladiatorial contests and public spectacles."
-            ),
-            "Parthenon": (
-                "Athens, Greece",
-                "Ancient Greek temple",
-                "The Parthenon is a former temple dedicated to the goddess Athena, built in 447 BC."
-            )
-        ]
-        
-        if let info = landmarks[name] {
-            return (
-                location: info.location,
-                locationName: name,
-                caption: info.caption,
-                description: info.description
-            )
-        }
-        
+        // Gemini provides all landmark info, this is just a minimal fallback
         return (
             location: "Unknown",
             locationName: name,
@@ -429,300 +310,4 @@ class PhotoViewModel: ObservableObject {
         )
     }
 }
-    
-    private func analyzeImageWithVision(_ image: UIImage) async -> (location: String, locationName: String, caption: String, description: String) {
-        guard let cgImage = image.cgImage else {
-            return getDefaultAnalysis()
-        }
-        
-        // Create Vision request handler
-        let requestHandler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-        
-        var detectedScenes: [String] = []
-        var detectedObjects: [String] = []
-        var confidence: Float = 0.0
-        
-        // Scene Classification Request
-        let sceneRequest = VNClassifyImageRequest { request, error in
-            guard let observations = request.results as? [VNClassificationObservation] else { return }
-            
-            // Get top 5 classifications
-            detectedScenes = observations.prefix(5).map { observation in
-                observation.identifier
-            }
-            
-            if let topObservation = observations.first {
-                confidence = topObservation.confidence
-            }
-        }
-        
-        // Object Recognition Request
-        let objectRequest = VNRecognizeAnimalsRequest { request, error in
-            guard let observations = request.results as? [VNRecognizedObjectObservation] else { return }
-            
-            detectedObjects = observations.prefix(3).compactMap { observation in
-                observation.labels.first?.identifier
-            }
-        }
-        
-        // Text Detection Request (for signs, plaques, etc.)
-        var detectedText: [String] = []
-        let textRequest = VNRecognizeTextRequest { request, error in
-            guard let observations = request.results as? [VNRecognizedTextObservation] else { return }
-            
-            detectedText = observations.compactMap { observation in
-                observation.topCandidates(1).first?.string
-            }.prefix(5).map { $0 }
-        }
-        textRequest.recognitionLevel = .accurate
-        
-        // Perform requests
-        do {
-            try requestHandler.perform([sceneRequest, objectRequest, textRequest])
-        } catch {
-            print("Vision request failed: \(error)")
-            return getDefaultAnalysis()
-        }
-        
-        // Generate analysis based on detected content
-        return generateAnalysisFromDetections(
-            scenes: detectedScenes,
-            objects: detectedObjects,
-            text: detectedText,
-            confidence: confidence
-        )
-    }
-    
-    // MARK: - Analysis Generation
-    
-    private func generateAnalysisFromDetections(
-        scenes: [String],
-        objects: [String],
-        text: [String],
-        confidence: Float
-    ) -> (location: String, locationName: String, caption: String, description: String) {
-        
-        // First check for famous landmarks in detected text
-        if let landmark = detectLandmarkFromText(text) {
-            return getLandmarkDetails(landmark)
-        }
-        
-        // Analyze scene types to determine location type
-        let isArchitecture = scenes.contains(where: { $0.contains("building") || $0.contains("architecture") || $0.contains("monument") || $0.contains("tower") })
-        let isNature = scenes.contains(where: { $0.contains("mountain") || $0.contains("landscape") || $0.contains("forest") || $0.contains("beach") || $0.contains("valley") })
-        let isUrban = scenes.contains(where: { $0.contains("city") || $0.contains("street") || $0.contains("urban") })
-        let isHistorical = scenes.contains(where: { $0.contains("historical") || $0.contains("castle") || $0.contains("temple") || $0.contains("palace") })
-        let isReligious = scenes.contains(where: { $0.contains("church") || $0.contains("cathedral") || $0.contains("mosque") || $0.contains("temple") })
-        
-        // Generate contextual description
-        var locationName = "Unknown Location"
-        var location = "Location not determined"
-        var caption = "Captured moment"
-        var description = ""
-        
-        if isArchitecture || isHistorical {
-            locationName = "Historic Building"
-            location = "Historic Site"
-            caption = "Architectural marvel captured"
-            description = "This image showcases a significant architectural structure with historical importance. "
-            
-            if scenes.contains(where: { $0.contains("tower") }) {
-                description += "The prominent tower structure suggests this could be an iconic landmark or bell tower. "
-                locationName = "Historic Tower"
-            }
-            if scenes.contains(where: { $0.contains("gothic") || $0.contains("classical") || $0.contains("baroque") }) {
-                description += "The architectural style displays classical or period design elements characteristic of European monuments. "
-            }
-            if scenes.contains(where: { $0.contains("amphitheater") || $0.contains("arena") }) {
-                description += "This appears to be an ancient amphitheater or arena, likely used for public gatherings and entertainment. "
-                locationName = "Ancient Amphitheater"
-            }
-            
-            description += "Historical structures like this represent significant periods in architectural history and often serve as major tourist destinations."
-            
-        } else if isReligious {
-            locationName = "Religious Monument"
-            location = "Sacred Site"
-            caption = "Sacred architecture captured"
-            description = "This image shows a religious building with spiritual and cultural significance. "
-            
-            if scenes.contains(where: { $0.contains("cathedral") || $0.contains("church") }) {
-                description += "The cathedral architecture features traditional Christian design elements. "
-                locationName = "Historic Cathedral"
-            }
-            
-            description += "Religious sites like this are often architectural masterpieces that attract pilgrims and tourists alike."
-            
-        } else if isNature {
-            locationName = "Natural Landscape"
-            location = "Natural Environment"
-            caption = "Beautiful natural scenery"
-            description = "This image captures stunning natural scenery. "
-            
-            if scenes.contains(where: { $0.contains("mountain") }) {
-                description += "The majestic mountain landscape provides dramatic views and outdoor recreation opportunities. "
-                locationName = "Mountain Vista"
-            }
-            if scenes.contains(where: { $0.contains("water") || $0.contains("ocean") || $0.contains("beach") || $0.contains("sea") }) {
-                description += "Coastal or waterfront features add to the scenic beauty and natural appeal. "
-                locationName = "Coastal Scenery"
-            }
-            if scenes.contains(where: { $0.contains("forest") }) {
-                description += "The forest setting offers peaceful natural surroundings and biodiversity. "
-                locationName = "Forest Landscape"
-            }
-            
-            description += "Natural environments like this provide perfect opportunities to connect with nature and enjoy outdoor activities."
-            
-        } else if isUrban {
-            locationName = "Urban Scene"
-            location = "City Environment"
-            caption = "City life captured"
-            description = "This image captures a vibrant urban environment. "
-            
-            if scenes.contains(where: { $0.contains("square") || $0.contains("plaza") }) {
-                description += "Public squares are gathering places that often showcase important monuments and city life. "
-                locationName = "City Square"
-            }
-            
-            description += "Urban settings offer diverse cultural experiences, modern architecture, and bustling activity."
-            
-        } else {
-            // Use most confident scene classification
-            if let topScene = scenes.first {
-                locationName = topScene.replacingOccurrences(of: "_", with: " ").capitalized
-            }
-            caption = "Interesting scene captured"
-            description = "This image captures a noteworthy location. "
-            description += "The scene suggests visual or cultural significance worth documenting and exploring further."
-        }
-        
-        // Add confidence and detected info
-        if confidence > 0.8 {
-            description += "\n\n✓ High confidence detection based on visual analysis."
-        }
-        
-        return (location: location, locationName: locationName, caption: caption, description: description)
-    }
-    
-    // Get detailed information for known landmarks
-    private func getLandmarkDetails(_ landmarkName: String) -> (location: String, locationName: String, caption: String, description: String) {
-        switch landmarkName {
-        case "Eiffel Tower":
-            return (
-                location: "Paris, France",
-                locationName: "Eiffel Tower",
-                caption: "Iconic iron tower in the heart of Paris",
-                description: "The Eiffel Tower, completed in 1889, stands as a global cultural icon of France. This wrought-iron lattice tower reaches 330 meters high and offers breathtaking panoramic views of Paris from three observation levels. Originally built for the 1889 World's Fair, it has become one of the most recognizable structures in the world, attracting millions of visitors annually."
-            )
-            
-        case "Colosseum":
-            return (
-                location: "Rome, Italy",
-                locationName: "Colosseum",
-                caption: "Ancient Roman amphitheater",
-                description: "The Colosseum, built between 70-80 AD, is an oval amphitheater in central Rome. It could hold 50,000 to 80,000 spectators and was used for gladiatorial contests, animal hunts, and public spectacles. Despite earthquakes and stone-robbers, it remains an iconic symbol of Imperial Rome and is listed as one of the New Seven Wonders of the World."
-            )
-            
-        case "Parthenon":
-            return (
-                location: "Athens, Greece",
-                locationName: "Parthenon",
-                caption: "Ancient temple dedicated to Athena",
-                description: "The Parthenon is a former temple on the Athenian Acropolis, dedicated to the goddess Athena. Construction began in 447 BC when Athens was at its peak. It's regarded as an enduring symbol of Ancient Greece, Athenian democracy, and Western civilization, with decorative sculptures considered among the finest examples of Greek art."
-            )
-            
-        case "Big Ben":
-            return (
-                location: "London, United Kingdom",
-                locationName: "Big Ben",
-                caption: "Iconic clock tower of London",
-                description: "Big Ben is the nickname for the Great Bell of the clock at the Palace of Westminster. The tower was completed in 1859 and has become one of London's most iconic landmarks. The clock is renowned for its reliability and the distinctive chime of its bells, which have become a symbol of British culture worldwide."
-            )
-            
-        case "Statue of Liberty":
-            return (
-                location: "New York, USA",
-                locationName: "Statue of Liberty",
-                caption: "Symbol of freedom and democracy",
-                description: "The Statue of Liberty, a gift from France to the United States, was dedicated in 1886. Standing at 305 feet tall, Lady Liberty has welcomed millions of immigrants arriving by sea. The statue has become a universal symbol of freedom and democracy, and is one of America's most recognizable icons."
-            )
-            
-        case "Taj Mahal":
-            return (
-                location: "Agra, India",
-                locationName: "Taj Mahal",
-                caption: "Ivory-white marble mausoleum",
-                description: "The Taj Mahal was commissioned by Mughal emperor Shah Jahan in 1632 as a tomb for his wife Mumtaz Mahal. This ivory-white marble mausoleum is considered the finest example of Mughal architecture, combining elements from Islamic, Persian, Ottoman Turkish, and Indian styles. It's a UNESCO World Heritage Site and attracts millions of visitors yearly."
-            )
-            
-        case "Notre-Dame":
-            return (
-                location: "Paris, France",
-                locationName: "Notre-Dame Cathedral",
-                caption: "Gothic architectural masterpiece",
-                description: "Notre-Dame de Paris is a medieval Catholic cathedral built between 1163 and 1345. It's considered one of the finest examples of French Gothic architecture, featuring innovative flying buttresses, stunning rose windows, and intricate sculptures. The cathedral has played a significant role in French history and culture for over 850 years."
-            )
-            
-        case "Louvre Museum":
-            return (
-                location: "Paris, France",
-                locationName: "Louvre Museum",
-                caption: "World's largest art museum",
-                description: "The Louvre is the world's most-visited museum and a historic landmark in Paris. Originally a royal palace, it opened as a museum in 1793. The iconic glass pyramid entrance was added in 1989. Housing over 38,000 objects, including the Mona Lisa and Venus de Milo, it spans human history from ancient civilizations to the 19th century."
-            )
-            
-        case "Acropolis":
-            return (
-                location: "Athens, Greece",
-                locationName: "Acropolis of Athens",
-                caption: "Ancient citadel above Athens",
-                description: "The Acropolis of Athens is an ancient citadel located on a rocky outcrop above the city. It contains the remains of several ancient buildings of great architectural and historic significance, including the Parthenon. Built in the 5th century BC, it represents the pinnacle of Classical Greek art and architecture."
-            )
-            
-        default:
-            return (
-                location: "Unknown Location",
-                locationName: landmarkName,
-                caption: "Landmark detected",
-                description: "This appears to be \(landmarkName), a notable landmark. The location has historical or cultural significance worth documenting and exploring."
-            )
-        }
-    }
-    
-    // Detect famous landmarks from text
-    private func detectLandmarkFromText(_ text: [String]) -> String? {
-        let landmarks = [
-            "eiffel": "Eiffel Tower",
-            "tower": "Historic Tower",
-            "colosseum": "Colosseum",
-            "parthenon": "Parthenon",
-            "big ben": "Big Ben",
-            "statue of liberty": "Statue of Liberty",
-            "taj mahal": "Taj Mahal",
-            "notre dame": "Notre-Dame",
-            "louvre": "Louvre Museum",
-            "acropolis": "Acropolis"
-        ]
-        
-        for textLine in text {
-            let lowercased = textLine.lowercased()
-            for (key, value) in landmarks {
-                if lowercased.contains(key) {
-                    return value
-                }
-            }
-        }
-        
-        return nil
-    }
-    
-    // Fallback analysis
-    private func getDefaultAnalysis() -> (location: String, locationName: String, caption: String, description: String) {
-        return (
-            location: "Unknown Location",
-            locationName: "Captured Scene",
-            caption: "Moment captured",
-            description: "This image has been captured and is ready for your review. The Vision framework was unable to provide detailed analysis, but the image has been successfully processed and saved."
-        )
-    }
+
