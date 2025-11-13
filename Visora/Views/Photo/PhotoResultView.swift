@@ -14,56 +14,77 @@ struct PhotoResultView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                // Photo with overlay
+                // Photo with parallax effect (matching DestinationDetailView)
                 ZStack(alignment: .bottomLeading) {
-                    if let image = photoEntry.image {
-                        Image(uiImage: image)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(height: 300)
-                            .clipped()
+                    GeometryReader { geometry in
+                        let offset = geometry.frame(in: .global).minY
+                        let imageHeight = 400 + max(offset, 0)
+                        
+                        if let image = photoEntry.image {
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: UIScreen.main.bounds.width, height: imageHeight)
+                                .frame(height: 400, alignment: .bottom)
+                        }
                     }
+                    .frame(height: 400)
+                    .clipped()
                     
-                    // Gradient overlay
+                    // Full-width gradient overlay
                     LinearGradient(
-                        colors: [Color.black.opacity(0), Color.black.opacity(0.7)],
+                        colors: [Color.black.opacity(0), Color.black.opacity(0.6)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .frame(height: 300)
+                    .frame(height: 400)
                     
-                    // Location badge
-                    VStack(alignment: .leading, spacing: 4) {
+                    // Location info overlay
+                    VStack(alignment: .leading, spacing: 8) {
                         if let locationName = photoEntry.locationName {
-                            HStack(spacing: 8) {
-                                Image(systemName: "mappin.circle.fill")
-                                    .foregroundColor(.white)
-                                Text(locationName)
-                                    .font(.custom("Inter", size: 16))
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.white)
-                            }
+                            Text(locationName)
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
                         }
                         
                         if let location = photoEntry.location {
-                            HStack(spacing: 6) {
-                                Image(systemName: "location.fill")
-                                    .foregroundColor(.white.opacity(0.8))
-                                    .font(.system(size: 12))
+                            HStack(spacing: 4) {
+                                Image(systemName: "mappin.and.ellipse")
+                                    .foregroundColor(.white)
                                 Text(location)
-                                    .font(.custom("Inter", size: 14))
-                                    .foregroundColor(.white.opacity(0.9))
+                                    .foregroundColor(.white)
                             }
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color.white.opacity(0.3))
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(20)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(20)
+                    
+                    // Close button (top right)
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                viewModel.reset()
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.black.opacity(0.3))
+                                        .frame(width: 40, height: 40)
+                                    
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(.white)
+                                }
+                            }
+                            .padding(.top, 60)
+                            .padding(.trailing, 20)
+                        }
+                        Spacer()
+                    }
                 }
-                .frame(height: 300)
+                .frame(height: 400)
+                .clipped()
                 
                 VStack(alignment: .leading, spacing: 24) {
                     // AI Analysis Section - ChatGPT style
@@ -202,6 +223,7 @@ struct PhotoResultView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .ignoresSafeArea(edges: .top)
         .background(Color.white)
     }
 }

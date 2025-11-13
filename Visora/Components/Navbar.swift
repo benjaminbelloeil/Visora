@@ -24,9 +24,9 @@ struct Navbar: View {
         ]
         
         // Selected tab item color
-        normalItemAppearance.selected.iconColor = UIColor(Color.primaryColor)
+        normalItemAppearance.selected.iconColor = UIColor(Color.actionColor)
         normalItemAppearance.selected.titleTextAttributes = [
-            .foregroundColor: UIColor(Color.primaryColor)
+            .foregroundColor: UIColor(Color.actionColor)
         ]
         
         appearance.stackedLayoutAppearance = normalItemAppearance
@@ -42,7 +42,7 @@ struct Navbar: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Home", systemImage: "house", value: 0) {
-                HomeView()
+                HomeView(selectedTab: $selectedTab)
             }
             
             Tab("Calendar", systemImage: "calendar", value: 1) {
@@ -63,7 +63,7 @@ struct Navbar: View {
                 Label("Capture", systemImage: "camera.viewfinder")
             }
         }
-        .accentColor(.primaryColor)
+        .accentColor(.actionColor)
     }
 }
 

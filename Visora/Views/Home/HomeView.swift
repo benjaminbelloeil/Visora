@@ -11,6 +11,11 @@ import MapKit
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
     @State private var showNotifications = false
+    @Binding var selectedTab: Int
+    
+    init(selectedTab: Binding<Int> = .constant(0)) {
+        self._selectedTab = selectedTab
+    }
     
     var body: some View {
         NavigationStack {
@@ -88,13 +93,26 @@ struct HomeView: View {
                         .padding(.leading, 0)
                     }
                     
-                    // Popular Locations Section
+                    // Visited Location Section
                     VStack(alignment: .leading, spacing: 20) {
                         // Section header
-                        Text("Popular Locations")
-                            .font(.custom("Montserrat-Black", size: 22))
-                            .foregroundColor(.textColor)
-                            .padding(.horizontal, 20)
+                        HStack {
+                            Text("Visited Location")
+                                .font(.custom("Montserrat-Black", size: 22))
+                                .foregroundColor(.textColor)
+                            
+                            Spacer()
+                            
+                            Button {
+                                selectedTab = 3 // Switch to Map tab
+                            } label: {
+                                Text("View all")
+                                    .font(.custom("Nunito Sans", size: 16))
+                                    .fontWeight(.medium)
+                                    .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.2))
+                            }
+                        }
+                        .padding(.horizontal, 20)
                         
                         // Map preview
                         Map(initialPosition: .region(MKCoordinateRegion(
@@ -108,7 +126,11 @@ struct HomeView: View {
                         }
                         .frame(height: 200)
                         .cornerRadius(20)
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 10)
+                        .onTapGesture {
+                            selectedTab = 3 // Switch to Map tab
+                        }
+                        .allowsHitTesting(true)
                     }
                 }
                 .padding(.vertical, 8)

@@ -19,16 +19,24 @@ struct DestinationDetailView: View {
                 ZStack(alignment: .bottomLeading) {
                     GeometryReader { geometry in
                         let offset = geometry.frame(in: .global).minY
-                        let imageHeight = 300 + max(offset, 0)
+                        let imageHeight = 400 + max(offset, 0)
                         
                         Image(destination.imageName)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                             .frame(width: UIScreen.main.bounds.width, height: imageHeight)
-                            .frame(height: 300, alignment: .bottom)
+                            .frame(height: 400, alignment: .bottom)
                     }
-                    .frame(height: 300)
+                    .frame(height: 400)
                     .clipped()
+                    
+                    // Full-width gradient overlay
+                    LinearGradient(
+                        colors: [Color.black.opacity(0), Color.black.opacity(0.6)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 400)
                     
                     // Title and location overlay on image
                     VStack(alignment: .leading, spacing: 8) {
@@ -44,16 +52,10 @@ struct DestinationDetailView: View {
                                 .foregroundColor(.white)
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(20)
-                    .background(
-                        LinearGradient(
-                            colors: [Color.black.opacity(0), Color.black.opacity(0.6)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
                 }
-                .frame(height: 300)
+                .frame(height: 400)
                 .clipped()
                 
                 VStack(alignment: .leading, spacing: 24) {

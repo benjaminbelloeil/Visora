@@ -10,11 +10,15 @@ import UIKit
 import Combine
 import Vision
 import CoreLocation
+import ImageIO
+import CoreLocation
 
 @MainActor
 class PhotoViewModel: ObservableObject {
     @Published var currentPhoto: PhotoEntry?
     @Published var isProcessing = false
+    
+    private let locationManager = CLLocationManager()
     
     // MARK: - Google Gemini API Configuration
     
@@ -32,8 +36,11 @@ class PhotoViewModel: ObservableObject {
     func processPhoto(_ image: UIImage) async {
         isProcessing = true
         
+        // Extract GPS location from photo EXIF data
+        let gpsLocation = await extractGPSLocation(from: image)
+        
         // Use Google Gemini for AI-powered image analysis
-        let geminiAnalysis = await analyzeWithGemini(image)
+        let geminiAnalysis = await analyzeWithGemini(image, gpsHint: gpsLocation)
         
         // Fallback to Vision framework if Gemini fails
         if let analysis = geminiAnalysis {
@@ -56,7 +63,7 @@ class PhotoViewModel: ObservableObject {
                 image: image,
                 imageName: "captured_photo_\(Date().timeIntervalSince1970)",
                 dateTaken: Date(),
-                location: visionAnalysis.location,
+                location: gpsLocation ?? visionAnalysis.location,
                 caption: visionAnalysis.caption,
                 locationName: visionAnalysis.locationName,
                 aiDescription: visionAnalysis.description,
@@ -74,9 +81,65 @@ class PhotoViewModel: ObservableObject {
         isProcessing = false
     }
     
+    // MARK: - GPS Location Extraction
+    
+    private func extractGPSLocation(from image: UIImage) async -> String? {
+        // Get EXIF metadata from image
+        guard let imageData = image.jpegData(compressionQuality: 1.0),
+              let imageSource = CGImageSourceCreateWithData(imageData as CFData, nil),
+              let metadata = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [String: Any],
+              let gpsData = metadata[kCGImagePropertyGPSDictionary as String] as? [String: Any] else {
+            print("📍 No GPS data found in image EXIF")
+            return nil
+        }
+        
+        // Extract latitude and longitude
+        guard let latitude = gpsData[kCGImagePropertyGPSLatitude as String] as? Double,
+              let longitude = gpsData[kCGImagePropertyGPSLongitude as String] as? Double,
+              let latRef = gpsData[kCGImagePropertyGPSLatitudeRef as String] as? String,
+              let lonRef = gpsData[kCGImagePropertyGPSLongitudeRef as String] as? String else {
+            print("📍 GPS data incomplete")
+            return nil
+        }
+        
+        // Adjust signs based on hemisphere
+        let finalLatitude = latRef == "S" ? -latitude : latitude
+        let finalLongitude = lonRef == "W" ? -longitude : longitude
+        
+        print("📍 GPS coordinates: \(finalLatitude), \(finalLongitude)")
+        
+        // Reverse geocode to get location name
+        let location = CLLocation(latitude: finalLatitude, longitude: finalLongitude)
+        let geocoder = CLGeocoder()
+        
+        do {
+            let placemarks = try await geocoder.reverseGeocodeLocation(location)
+            if let placemark = placemarks.first {
+                var locationParts: [String] = []
+                
+                // Add locality (city) if available
+                if let locality = placemark.locality {
+                    locationParts.append(locality)
+                }
+                // Add country
+                if let country = placemark.country {
+                    locationParts.append(country)
+                }
+                
+                let locationString = locationParts.joined(separator: ", ")
+                print("📍 Reverse geocoded to: \(locationString)")
+                return locationString.isEmpty ? nil : locationString
+            }
+        } catch {
+            print("📍 Reverse geocoding failed: \(error.localizedDescription)")
+        }
+        
+        return nil
+    }
+    
     // MARK: - Google Gemini Vision API
     
-    private func analyzeWithGemini(_ image: UIImage) async -> (location: String, locationName: String, caption: String, description: String, fact1: String, fact2: String, fact3: String)? {
+    private func analyzeWithGemini(_ image: UIImage, gpsHint: String?) async -> (location: String, locationName: String, caption: String, description: String, fact1: String, fact2: String, fact3: String)? {
         // Check if API key is set
         guard geminiAPIKey != "YOUR_GEMINI_API_KEY_HERE" && !geminiAPIKey.isEmpty else {
             print("⚠️ Gemini API key not set. Get your FREE key at: https://makersuite.google.com/app/apikey")
@@ -84,6 +147,9 @@ class PhotoViewModel: ObservableObject {
         }
         
         print("🔍 Analyzing image with Gemini AI...")
+        if let gps = gpsHint {
+            print("📍 GPS location hint: \(gps)")
+        }
         
         // Convert image to base64
         guard let imageData = image.jpegData(compressionQuality: 0.7) else {
@@ -91,7 +157,9 @@ class PhotoViewModel: ObservableObject {
         }
         let base64Image = imageData.base64EncodedString()
         
-        // Create detailed prompt for travel analysis
+        // Create detailed prompt for travel analysis with optional GPS hint
+        let gpsPromptAddition = gpsHint != nil ? "\n\nThe photo was taken at or near: \(gpsHint!). Use this to help identify the specific landmark or location if visible in the image." : ""
+        
         let prompt = """
         You are an expert travel guide analyzing a photo. Provide a detailed analysis in JSON format with these exact fields:
         
@@ -103,7 +171,7 @@ class PhotoViewModel: ObservableObject {
           "fact1": "First interesting historical or cultural fact (e.g., 'Built in 1889 for the World's Fair')",
           "fact2": "Second interesting fact about visitor experience or significance (e.g., 'Most visited paid monument in the world')",
           "fact3": "Third architectural or cultural fact (e.g., 'Named after engineer Gustave Eiffel')"
-        }
+        }\(gpsPromptAddition)
         
         Be specific with landmark names and locations. Include the city AND country in the location field. Make facts concise but interesting.
         
