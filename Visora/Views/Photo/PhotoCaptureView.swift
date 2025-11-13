@@ -58,12 +58,13 @@ struct PhotoCaptureView: View {
                 }
             }
             .navigationTitle("Capture")
-            .sheet(isPresented: $showingCamera) {
+            .fullScreenCover(isPresented: $showingCamera) {
                 ImagePicker(sourceType: .camera) { image in
                     Task {
                         await viewModel.processPhoto(image)
                     }
                 }
+                .ignoresSafeArea()
             }
             .onChange(of: selectedItem) { _, newValue in
                 Task {

@@ -19,17 +19,17 @@ struct OnboardingPage3View: View {
             VStack(spacing: 24) {
                 VStack(spacing: 4) {
                     Text("People don't take")
-                        .font(.custom("Montserrat", size: 36).weight(.black))
+                        .font(.custom("Montserrat", size: 34).weight(.black))
                         .foregroundColor(.textColor)
                     
                     HStack(spacing: 8) {
                         Text("trips, trips take")
-                            .font(.custom("Montserrat", size: 36).weight(.black))
+                            .font(.custom("Montserrat", size: 34).weight(.black))
                             .foregroundColor(.textColor)
                         
                         ZStack(alignment: .bottom) {
                             Text("people")
-                                .font(.custom("Montserrat", size: 36).weight(.black))
+                                .font(.custom("Montserrat", size: 34).weight(.black))
                                 .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.2))
                             
                             CurvedUnderline()
