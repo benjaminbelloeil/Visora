@@ -53,7 +53,7 @@ struct HomeView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 15)
                     
                     // Best Destination Section
                     VStack(alignment: .leading, spacing: 20) {
@@ -74,7 +74,7 @@ struct HomeView: View {
                                     .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.2))
                             }
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 15)
                         
                         // Horizontal scrolling destinations
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -86,7 +86,7 @@ struct HomeView: View {
                                     .buttonStyle(.plain)
                                 }
                             }
-                            .padding(.leading, 5)
+                            .padding(.leading, 10)
                             .padding(.trailing, 20)
                             .padding(.bottom, 30)
                         }
@@ -112,7 +112,7 @@ struct HomeView: View {
                                     .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.2))
                             }
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 15)
                         
                         // Map preview
                         Map(initialPosition: .region(MKCoordinateRegion(
@@ -135,7 +135,7 @@ struct HomeView: View {
                 }
                 .padding(.vertical, 8)
             }
-            .background(Color.cardBackground)
+            .background(Color.white)
             .onAppear {
                 viewModel.loadFeaturedDestinations()
             }

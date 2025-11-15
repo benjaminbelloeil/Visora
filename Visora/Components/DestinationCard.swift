@@ -17,12 +17,13 @@ struct DestinationCard: View {
             Rectangle()
                 .foregroundColor(.clear)
                 .frame(width: 268, height: 384)
-                .background(Color.cardBackground)
+                .background(Color.white)
                 .cornerRadius(24)
                 .shadow(
-                    color: Color(red: 0.71, green: 0.74, blue: 0.79, opacity: 0.12),
-                    radius: 16,
-                    y: 6
+                    color: Color.black.opacity(0.08),
+                    radius: 12,
+                    x: 0,
+                    y: 4
                 )
             
             // Destination Image

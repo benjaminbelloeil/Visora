@@ -19,7 +19,7 @@ struct UserProfileHeader: View {
                 Rectangle()
                     .foregroundColor(.clear)
                     .frame(width: 118, height: 44)
-                    .background(Color(red: 0.97, green: 0.97, blue: 0.98))
+                    .background(Color.cardBackground)
                     .cornerRadius(22)
                     .offset(x: -108.50, y: 0)
                 
@@ -55,7 +55,7 @@ struct UserProfileHeader: View {
                     .frame(width: 44, height: 44)
                     .background(
                         Circle()
-                            .fill(Color(red: 0.97, green: 0.97, blue: 0.98))
+                            .fill(Color.cardBackground)
                     )
                     .offset(x: 180.50, y: 0)
                 

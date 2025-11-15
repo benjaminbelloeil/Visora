@@ -59,102 +59,29 @@ struct DestinationDetailView: View {
                 .clipped()
                 
                 VStack(alignment: .leading, spacing: 24) {
-                    // About Section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("About")
-                            .font(.custom("Montserrat-Black", size: 22))
-                            .foregroundColor(.textColor)
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                            BulletPoint(text: getBulletPoint1())
-                            BulletPoint(text: getBulletPoint2())
-                            BulletPoint(text: getBulletPoint3())
-                        }
-                    }
-                    
-                    // Details Section
+                    // Details Section - AI Analysis Style
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Details")
-                            .font(.custom("Montserrat-Black", size: 22))
-                            .foregroundColor(.textColor)
-                        
-                        // Category
-                        if let category = destination.category {
-                            HStack(spacing: 12) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(red: 1.0, green: 0.45, blue: 0.2).opacity(0.1))
-                                        .frame(width: 44, height: 44)
-                                    Image(systemName: "tag.fill")
-                                        .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.2))
-                                        .font(.system(size: 18))
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Category")
-                                        .font(.custom("Nunito Sans", size: 14))
-                                        .foregroundColor(.subTextColor)
-                                    Text(category)
-                                        .font(.custom("Inter", size: 16))
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.textColor)
-                                }
-                                
-                                Spacer()
+                        VStack(alignment: .leading, spacing: 12) {
+                            // Key Facts from AI
+                            if let fact1 = destination.fact1 {
+                                InfoBullet(icon: "info.circle.fill", text: fact1, color: .blue)
+                            }
+                            if let fact2 = destination.fact2 {
+                                InfoBullet(icon: "star.fill", text: fact2, color: Color(red: 1.0, green: 0.76, blue: 0.03))
+                            }
+                            if let fact3 = destination.fact3 {
+                                InfoBullet(icon: "building.2.fill", text: fact3, color: .purple)
                             }
                         }
                         
-                        // Rating
-                        if let rating = destination.rating {
-                            HStack(spacing: 12) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(red: 1.0, green: 0.76, blue: 0.03).opacity(0.1))
-                                        .frame(width: 44, height: 44)
-                                    Image(systemName: "star.fill")
-                                        .foregroundColor(Color(red: 1.0, green: 0.76, blue: 0.03))
-                                        .font(.system(size: 18))
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Rating")
-                                        .font(.custom("Nunito Sans", size: 14))
-                                        .foregroundColor(.subTextColor)
-                                    Text(String(format: "%.1f / 5.0", rating))
-                                        .font(.custom("Inter", size: 16))
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.textColor)
-                                }
-                                
-                                Spacer()
-                            }
-                        }
-                        
-                        // Visitors
-                        if let visitorCount = destination.visitorCount {
-                            HStack(spacing: 12) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.blue.opacity(0.1))
-                                        .frame(width: 44, height: 44)
-                                    Image(systemName: "person.2.fill")
-                                        .foregroundColor(.blue)
-                                        .font(.system(size: 18))
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Visitors")
-                                        .font(.custom("Nunito Sans", size: 14))
-                                        .foregroundColor(.subTextColor)
-                                    Text("\(visitorCount)+ people")
-                                        .font(.custom("Inter", size: 16))
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.textColor)
-                                }
-                                
-                                Spacer()
-                            }
-                        }
+                        // Full description
+                        Text(destination.description)
+                            .font(.custom("Nunito Sans", size: 16))
+                            .foregroundColor(.subTextColor)
+                            .lineSpacing(6)
+                            .padding()
+                            .background(Color(red: 0.97, green: 0.97, blue: 0.98))
+                            .cornerRadius(12)
                     }
                     
                     // Location Map
@@ -180,69 +107,10 @@ struct DestinationDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .ignoresSafeArea(edges: .top)
     }
-    
-    // Helper functions to get bullet points based on destination
-    private func getBulletPoint1() -> String {
-        switch destination.name {
-        case "Eiffel Tower":
-            return "Iconic 330-meter iron tower built in 1889 for the World's Fair"
-        case "Athens":
-            return "Historic capital with 3,400 years of civilization and democracy's birthplace"
-        case "Colosseum":
-            return "Largest ancient amphitheater built between 70-80 AD"
-        default:
-            return "Amazing destination worth visiting"
-        }
-    }
-    
-    private func getBulletPoint2() -> String {
-        switch destination.name {
-        case "Eiffel Tower":
-            return "Three observation levels with breathtaking panoramic views of Paris"
-        case "Athens":
-            return "Home to the magnificent Acropolis and iconic Parthenon temple"
-        case "Colosseum":
-            return "Could hold up to 80,000 spectators for gladiatorial contests"
-        default:
-            return "Rich history and culture"
-        }
-    }
-    
-    private func getBulletPoint3() -> String {
-        switch destination.name {
-        case "Eiffel Tower":
-            return "Sparkles with 20,000 golden lights every evening"
-        case "Athens":
-            return "Charming Plaka neighborhood with authentic Greek tavernas"
-        case "Colosseum":
-            return "UNESCO World Heritage Site and New Seven Wonders of the World"
-        default:
-            return "Unforgettable experiences await"
-        }
-    }
 }
 
-// Bullet Point Component
-struct BulletPoint: View {
-    let text: String
-    
-    var body: some View {
-        HStack(alignment: .top, spacing: 8) {
-            Text("•")
-                .font(.custom("Nunito Sans", size: 16))
-                .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.2))
-                .fontWeight(.bold)
-            
-            Text(text)
-                .font(.custom("Nunito Sans", size: 16))
-                .foregroundColor(.subTextColor)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-    
-    #Preview {
-        NavigationStack {
-            DestinationDetailView(destination: Destination.sampleData[0])
-        }
+#Preview {
+    NavigationStack {
+        DestinationDetailView(destination: Destination.sampleData[0])
     }
 }

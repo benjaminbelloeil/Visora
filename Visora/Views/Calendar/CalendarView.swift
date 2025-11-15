@@ -69,12 +69,13 @@ struct CalendarView: View {
                             .foregroundColor(.clear)
                             .frame(maxWidth: .infinity)
                             .frame(height: 148)
-                            .background(Color.cardBackground)
+                            .background(Color.white)
                             .cornerRadius(24)
                             .shadow(
-                                color: Color(red: 0.71, green: 0.74, blue: 0.79, opacity: 0.16),
-                                radius: 20,
-                                y: 6
+                                color: Color.black.opacity(0.08),
+                                radius: 12,
+                                x: 0,
+                                y: 4
                             )
                         
                         // Date title
@@ -167,19 +168,13 @@ struct CalendarView: View {
                         // Photos list
                         if let photos = viewModel.photosForDate(selectedDate), !photos.isEmpty {
                             VStack(alignment: .leading, spacing: 16) {
-                                // Container card around first 3 horizontal cards
-                                VStack(spacing: 16) {
-                                    ForEach(photos.prefix(showAllPhotos ? photos.count : 3)) { photo in
-                                        NavigationLink(destination: CalendarDayDetailView(photo: photo)) {
-                                            ScheduleCard(photo: photo)
-                                        }
-                                        .buttonStyle(.plain)
+                                // Individual cards without container
+                                ForEach(photos.prefix(showAllPhotos ? photos.count : 3)) { photo in
+                                    NavigationLink(destination: CalendarDayDetailView(photo: photo)) {
+                                        ScheduleCard(photo: photo)
                                     }
+                                    .buttonStyle(.plain)
                                 }
-                                .padding(16)
-                                .background(Color.cardBackground)
-                                .cornerRadius(20)
-                                .shadow(color: Color(red: 0.71, green: 0.74, blue: 0.79, opacity: 0.16), radius: 20, y: 6)
                                 
                                 // "View More" button if there are more than 3 photos
                                 if photos.count > 3 {
@@ -236,7 +231,7 @@ struct CalendarView: View {
                 }
                 .padding(.vertical, 8)
             }
-            .background(Color.cardBackground)
+            .background(Color.white)
             .sheet(isPresented: $showNotifications) {
                 NotificationsView()
                     .presentationDetents([.medium, .large])
@@ -313,7 +308,7 @@ struct CompactPhotoCard: View {
             )
         }
         .frame(height: 140)
-        .background(Color.cardBackground)
+        .background(Color.white)
         .cornerRadius(16)
         .shadow(color: Color(red: 0.71, green: 0.74, blue: 0.79, opacity: 0.12), radius: 16, y: 6)
     }
@@ -331,21 +326,21 @@ struct ScheduleCard: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            // Photo thumbnail
+            // Photo thumbnail - larger
             if let image = photo.image {
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: 80, height: 80)
+                    .frame(width: 100, height: 100)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
             } else {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color(red: 0.50, green: 0.23, blue: 0.27).opacity(0.50))
-                    .frame(width: 80, height: 80)
+                    .frame(width: 100, height: 100)
             }
             
             // Info
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 4) {
                     Image(systemName: "calendar")
                         .font(.system(size: 12))
@@ -356,9 +351,10 @@ struct ScheduleCard: View {
                 }
                 
                 Text(photo.locationName ?? "Unknown Location")
-                    .font(.custom("SF Pro", size: 16))
+                    .font(.custom("SF Pro", size: 17))
+                    .fontWeight(.semibold)
                     .foregroundColor(.textColor)
-                    .lineLimit(1)
+                    .lineLimit(2)
                 
                 HStack(spacing: 4) {
                     Image(systemName: "mappin.circle")
@@ -376,10 +372,11 @@ struct ScheduleCard: View {
             Image(systemName: "chevron.right")
                 .foregroundColor(Color(red: 0.49, green: 0.52, blue: 0.55))
         }
-        .padding(16)
-        .background(Color.cardBackground)
-        .cornerRadius(16)
-        .shadow(color: Color(red: 0.71, green: 0.74, blue: 0.79, opacity: 0.12), radius: 16, y: 6)
+        .padding(20)
+        .frame(maxWidth: .infinity)
+        .background(Color.white)
+        .cornerRadius(20)
+        .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 4)
     }
 }
 

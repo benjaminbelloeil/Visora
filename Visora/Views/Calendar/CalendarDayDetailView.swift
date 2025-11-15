@@ -164,7 +164,7 @@ struct CalendarDayDetailView: View {
             }
         }
         .ignoresSafeArea(edges: .top)
-        .background(Color.cardBackground)
+        .background(Color.white)
     }
 }
 

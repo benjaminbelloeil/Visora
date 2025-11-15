@@ -18,6 +18,9 @@ struct Destination: Identifiable, Codable {
     let category: String?
     let rating: Double?
     let visitorCount: Int?
+    let fact1: String?
+    let fact2: String?
+    let fact3: String?
     
     init(
         id: String = UUID().uuidString,
@@ -28,7 +31,10 @@ struct Destination: Identifiable, Codable {
         country: String,
         category: String? = nil,
         rating: Double? = nil,
-        visitorCount: Int? = nil
+        visitorCount: Int? = nil,
+        fact1: String? = nil,
+        fact2: String? = nil,
+        fact3: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -39,10 +45,13 @@ struct Destination: Identifiable, Codable {
         self.category = category
         self.rating = rating
         self.visitorCount = visitorCount
+        self.fact1 = fact1
+        self.fact2 = fact2
+        self.fact3 = fact3
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, name, description, imageName, country, category, rating, visitorCount
+        case id, name, description, imageName, country, category, rating, visitorCount, fact1, fact2, fact3
         case latitude = "coordinate.latitude"
         case longitude = "coordinate.longitude"
     }
@@ -57,6 +66,9 @@ struct Destination: Identifiable, Codable {
         category = try container.decodeIfPresent(String.self, forKey: .category)
         rating = try container.decodeIfPresent(Double.self, forKey: .rating)
         visitorCount = try container.decodeIfPresent(Int.self, forKey: .visitorCount)
+        fact1 = try container.decodeIfPresent(String.self, forKey: .fact1)
+        fact2 = try container.decodeIfPresent(String.self, forKey: .fact2)
+        fact3 = try container.decodeIfPresent(String.self, forKey: .fact3)
         
         let latitude = try container.decode(Double.self, forKey: .latitude)
         let longitude = try container.decode(Double.self, forKey: .longitude)
@@ -73,6 +85,9 @@ struct Destination: Identifiable, Codable {
         try container.encodeIfPresent(category, forKey: .category)
         try container.encodeIfPresent(rating, forKey: .rating)
         try container.encodeIfPresent(visitorCount, forKey: .visitorCount)
+        try container.encodeIfPresent(fact1, forKey: .fact1)
+        try container.encodeIfPresent(fact2, forKey: .fact2)
+        try container.encodeIfPresent(fact3, forKey: .fact3)
         try container.encode(coordinate.latitude, forKey: .latitude)
         try container.encode(coordinate.longitude, forKey: .longitude)
     }
@@ -88,17 +103,23 @@ extension Destination {
             country: "Paris, France",
             category: "Landmark",
             rating: 4.7,
-            visitorCount: 50
+            visitorCount: 50,
+            fact1: "Built in 1889 for the World's Fair and was meant to be temporary",
+            fact2: "Stands 330 meters tall with three observation levels",
+            fact3: "Sparkles with 20,000 golden lights every evening"
         ),
         Destination(
-            name: "Athens",
-            description: "Athens, the historic capital of Greece, is a city where ancient history meets modern vibrant culture. Home to the magnificent Acropolis and the iconic Parthenon, Athens offers visitors a journey through 3,400 years of civilization. Wander through the charming Plaka neighborhood with its narrow streets and neoclassical architecture, explore world-class museums like the Acropolis Museum, and experience authentic Greek cuisine in traditional tavernas. The city's archaeological sites tell stories of democracy's birthplace, while contemporary Athens buzzes with art galleries, rooftop bars, and a thriving nightlife scene. From ancient temples to bustling markets, Athens perfectly balances its glorious past with dynamic present.",
+            name: "Taj Mahal",
+            description: "The Taj Mahal is an ivory-white marble mausoleum and one of the most beautiful buildings in the world. Built by Mughal emperor Shah Jahan in memory of his beloved wife Mumtaz Mahal, this UNESCO World Heritage Site took 22 years to complete. The monument's stunning symmetry, intricate marble inlay work, and gorgeous gardens create an unforgettable sight. The white marble changes color throughout the day, appearing pink at sunrise, white during the day, and golden under moonlight. This eternal symbol of love attracts millions of visitors annually who come to witness its breathtaking beauty.",
             imageName: "Destination2",
-            coordinate: CLLocationCoordinate2D(latitude: 36.3932, longitude: 25.4615),
-            country: "Athens, Greece",
-            category: "Historical City",
-            rating: 4.8,
-            visitorCount: 120
+            coordinate: CLLocationCoordinate2D(latitude: 27.1751, longitude: 78.0421),
+            country: "Agra, India",
+            category: "Monument",
+            rating: 4.9,
+            visitorCount: 150,
+            fact1: "Commissioned in 1632 by Shah Jahan for his wife Mumtaz Mahal",
+            fact2: "Took 22 years and 20,000 artisans to complete",
+            fact3: "Made entirely of white marble with semi-precious stone inlays"
         ),
         Destination(
             name: "Colosseum",
@@ -108,7 +129,36 @@ extension Destination {
             country: "Rome, Italy",
             category: "Historical",
             rating: 4.9,
-            visitorCount: 200
+            visitorCount: 200,
+            fact1: "Built between 70-80 AD during the Flavian dynasty",
+            fact2: "Could hold 50,000 to 80,000 spectators for gladiatorial games",
+            fact3: "UNESCO World Heritage Site and New Seven Wonders of the World"
+        ),
+        Destination(
+            name: "Statue of Liberty",
+            description: "The Statue of Liberty stands as a powerful symbol of freedom and democracy, welcoming millions to New York Harbor since 1886. This colossal neoclassical sculpture was a gift from France to the United States, designed by French sculptor Frédéric Auguste Bartholdi. Standing 305 feet tall from ground to torch, Lady Liberty holds a torch above her head with her right hand and carries a tablet inscribed with the date of American independence in her left. Visitors can climb the 354 steps to the crown for spectacular views of New York City and the harbor. The statue represents opportunity, hope, and the enduring friendship between nations.",
+            imageName: "Destination4",
+            coordinate: CLLocationCoordinate2D(latitude: 40.6892, longitude: -74.0445),
+            country: "New York, USA",
+            category: "Monument",
+            rating: 4.8,
+            visitorCount: 180,
+            fact1: "Gift from France, dedicated on October 28, 1886",
+            fact2: "Made of copper sheets assembled on a framework of steel",
+            fact3: "The crown has 25 windows symbolizing gemstones and heaven's rays"
+        ),
+        Destination(
+            name: "Christ the Redeemer",
+            description: "Christ the Redeemer is an iconic Art Deco statue of Jesus Christ overlooking Rio de Janeiro from atop Mount Corcovado. Standing 98 feet tall with arms stretched 92 feet wide, this magnificent monument has become a cultural icon of both Rio and Brazil. Constructed between 1922 and 1931, the statue is made of reinforced concrete and soapstone. The panoramic views from the base offer breathtaking vistas of the city, Sugarloaf Mountain, and Guanabara Bay. Voted one of the New Seven Wonders of the World, this masterpiece combines religious symbolism with stunning architectural achievement.",
+            imageName: "Destination5",
+            coordinate: CLLocationCoordinate2D(latitude: -22.9519, longitude: -43.2105),
+            country: "Rio de Janeiro, Brazil",
+            category: "Monument",
+            rating: 4.8,
+            visitorCount: 160,
+            fact1: "Built between 1922-1931, stands 98 feet tall atop Corcovado Mountain",
+            fact2: "Arms stretch 92 feet wide, weighing 635 metric tons",
+            fact3: "One of the New Seven Wonders of the World since 2007"
         )
     ]
 }
