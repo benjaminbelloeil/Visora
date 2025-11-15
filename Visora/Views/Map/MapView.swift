@@ -10,17 +10,23 @@ import MapKit
 
 struct MapView: View {
     @StateObject private var viewModel = MapViewModel()
-    @State private var selectedPlace: Place?
+    @State private var selectedPhoto: PhotoEntry?
     
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
-                Map(position: $viewModel.cameraPosition, selection: $selectedPlace) {
+                Map(position: $viewModel.cameraPosition) {
                     UserAnnotation()
                     
-                    ForEach(viewModel.nearbyPlaces) { place in
-                        Annotation(place.name, coordinate: place.coordinate) {
-                            PlaceAnnotation(place: place)
+                    ForEach(viewModel.photoPins) { photo in
+                        if let coordinate = photo.coordinate {
+                            Annotation(photo.locationName ?? "Unknown", coordinate: coordinate) {
+                                Button(action: {
+                                    selectedPhoto = photo
+                                }) {
+                                    PhotoPinAnnotation(photo: photo)
+                                }
+                            }
                         }
                     }
                 }
@@ -29,72 +35,128 @@ struct MapView: View {
                     MapCompass()
                 }
                 
-                // Place detail card
-                if let place = selectedPlace {
+                // Photo detail card
+                if let photo = selectedPhoto {
                     VStack {
                         Spacer()
-                        PlaceDetailCard(place: place, selectedPlace: $selectedPlace)
+                        PhotoMapDetailCard(photo: photo, selectedPhoto: $selectedPhoto)
                             .padding()
                             .transition(.move(edge: .bottom))
                     }
                 }
             }
-            .navigationTitle("Nearby")
+            .navigationTitle("My Memories")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 viewModel.requestLocationPermission()
-                viewModel.loadNearbyPlaces()
+                viewModel.loadPhotoPins()
             }
         }
     }
 }
 
-struct PlaceDetailCard: View {
-    let place: Place
-    @Binding var selectedPlace: Place?
+// Custom Photo Pin Annotation
+struct PhotoPinAnnotation: View {
+    let photo: PhotoEntry
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            ZStack {
+                // Pin background
+                Circle()
+                    .fill(Color.actionColor)
+                    .frame(width: 44, height: 44)
+                    .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
+                
+                // Photo thumbnail or camera icon
+                if let image = photo.image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 36, height: 36)
+                        .clipShape(Circle())
+                } else {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.white)
+                }
+            }
+            
+            // Pin pointer
+            Image(systemName: "arrowtriangle.down.fill")
+                .font(.system(size: 12))
+                .foregroundColor(.actionColor)
+                .offset(y: -4)
+        }
+    }
+}
+
+// Photo Detail Card on Map
+struct PhotoMapDetailCard: View {
+    let photo: PhotoEntry
+    @Binding var selectedPhoto: PhotoEntry?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(place.name)
+                    Text(photo.locationName ?? "Unknown Location")
                         .font(.headline)
+                        .foregroundColor(.textColor)
                     
-                    if let category = place.category {
-                        Text(category)
-                            .font(.caption)
-                            .foregroundColor(.subTextColor)
+                    if let location = photo.location {
+                        HStack(spacing: 4) {
+                            Image(systemName: "mappin.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(.actionColor)
+                            Text(location)
+                                .font(.caption)
+                                .foregroundColor(.subTextColor)
+                        }
                     }
                 }
                 
                 Spacer()
                 
                 Button {
-                    selectedPlace = nil
+                    selectedPhoto = nil
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
+                        .font(.system(size: 24))
+                        .foregroundColor(.gray.opacity(0.6))
                 }
             }
             
-            if let description = place.description {
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.subTextColor)
-                    .lineLimit(3)
+            // Photo thumbnail
+            if let image = photo.image {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 120)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             
-            NavigationLink(destination: PlaceDetailView(place: place)) {
-                Text("View Details")
+            if let caption = photo.caption {
+                Text(caption)
                     .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.actionColor)
+                    .foregroundColor(.subTextColor)
+                    .lineLimit(2)
+            }
+            
+            NavigationLink(destination: CalendarDayDetailView(photo: photo)) {
+                HStack {
+                    Text("View Details")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    Image(systemName: "arrow.right")
+                }
+                .foregroundColor(.actionColor)
             }
         }
         .padding()
         .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .shadow(radius: 10)
+        .cornerRadius(20)
+        .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
     }
 }
 

@@ -17,7 +17,7 @@ struct DestinationCard: View {
             Rectangle()
                 .foregroundColor(.clear)
                 .frame(width: 268, height: 384)
-                .background(.white)
+                .background(Color.cardBackground)
                 .cornerRadius(24)
                 .shadow(
                     color: Color(red: 0.71, green: 0.74, blue: 0.79, opacity: 0.12),

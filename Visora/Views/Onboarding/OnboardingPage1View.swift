@@ -21,36 +21,36 @@ struct OnboardingPage1View: View {
             // Text content
             VStack(spacing: 24) {
                 VStack(spacing: 4) {
-                    Text("Life is short and the")
-                        .font(.custom("Montserrat", size: 38).weight(.black))
+                    Text("Capture the world")
+                        .font(.custom("Montserrat", size: 34).weight(.black))
                         .foregroundColor(.textColor)
                     
                     HStack(spacing: 8) {
-                        Text("world is")
-                            .font(.custom("Montserrat", size: 38).weight(.black))
+                        Text("through your")
+                            .font(.custom("Montserrat", size: 34).weight(.black))
                             .foregroundColor(.textColor)
                         
                         ZStack(alignment: .bottom) {
-                            Text("wide")
-                                .font(.custom("Montserrat", size: 38).weight(.black))
-                                .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.2))
+                            Text("camera")
+                                .font(.custom("Montserrat", size: 34).weight(.black))
+                                .foregroundColor(Color.actionColor)
                             
                             CurvedUnderline()
-                                .fill(Color(red: 1.0, green: 0.45, blue: 0.2))
-                                .frame(width: 90, height: 9)
-                                .offset(y: 21)
+                                .fill(Color.actionColor)
+                                .frame(width: 130, height: 8)
+                                .offset(y: 19)
                         }
                     }
                 }
                 .padding(.top, 40)
                 
-                Text("At Friends tours and travel, we customize\nreliable and trutworthy educational tours\nto destinations all over the world")
+                Text("Transform your travel photos into\nintelligent memories with AI-powered\nlandmark recognition and insights")
                     .font(.custom("Nunito Sans", size: 17))
                     .foregroundColor(.subTextColor)
                     .multilineTextAlignment(.center)
                     .padding(.top, 16)
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 30)
             
             Spacer()
         }

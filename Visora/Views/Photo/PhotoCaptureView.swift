@@ -231,16 +231,27 @@ struct PhotoCaptureView: View {
             .fullScreenCover(isPresented: $showingCamera) {
                 ImagePicker(sourceType: .camera) { image in
                     Task {
-                        await viewModel.processPhoto(image)
+                        await viewModel.processPhoto(image, asset: nil)
                     }
                 }
                 .ignoresSafeArea()
             }
             .onChange(of: selectedItem) { _, newValue in
                 Task {
-                    if let data = try? await newValue?.loadTransferable(type: Data.self),
-                       let image = UIImage(data: data) {
-                        await viewModel.processPhoto(image)
+                    if let newValue = newValue {
+                        // Load the image data
+                        if let data = try? await newValue.loadTransferable(type: Data.self),
+                           let image = UIImage(data: data) {
+                            
+                            // Try to get the PHAsset for location info
+                            var phAsset: PHAsset?
+                            if let assetIdentifier = newValue.itemIdentifier {
+                                let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [assetIdentifier], options: nil)
+                                phAsset = fetchResult.firstObject
+                            }
+                            
+                            await viewModel.processPhoto(image, asset: phAsset)
+                        }
                     }
                 }
             }

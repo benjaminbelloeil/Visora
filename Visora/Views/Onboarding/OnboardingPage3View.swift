@@ -18,36 +18,36 @@ struct OnboardingPage3View: View {
             // Text content
             VStack(spacing: 24) {
                 VStack(spacing: 4) {
-                    Text("People don't take")
+                    Text("Your memories,")
                         .font(.custom("Montserrat", size: 34).weight(.black))
                         .foregroundColor(.textColor)
                     
                     HStack(spacing: 8) {
-                        Text("trips, trips take")
+                        Text("beautifully")
                             .font(.custom("Montserrat", size: 34).weight(.black))
                             .foregroundColor(.textColor)
                         
                         ZStack(alignment: .bottom) {
-                            Text("people")
+                            Text("organized")
                                 .font(.custom("Montserrat", size: 34).weight(.black))
-                                .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.2))
+                                .foregroundColor(Color.actionColor)
                             
                             CurvedUnderline()
-                                .fill(Color(red: 1.0, green: 0.45, blue: 0.2))
-                                .frame(width: 114, height: 9)
+                                .fill(Color.actionColor)
+                                .frame(width: 140, height: 8)
                                 .offset(y: 22)
                         }
                     }
                 }
                 .padding(.top, 40)
                 
-                Text("To get the best of your adventure you\njust need to leave and go where you like.\nwe are waiting for you")
+                Text("Track your travels on an interactive map\nand relive your adventures through a\nvisual timeline of analyzed moments")
                     .font(.custom("Nunito Sans", size: 17))
                     .foregroundColor(.subTextColor)
                     .multilineTextAlignment(.center)
                     .padding(.top, 16)
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 30)
             
             Spacer()
         }

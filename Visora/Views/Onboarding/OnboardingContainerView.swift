@@ -61,10 +61,10 @@ struct OnboardingContainerView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(Color.primaryColor)
+                            .background(Color.actionColor)
                             .cornerRadius(16)
                     }
-                    .padding(.horizontal, 40)
+                    .padding(.horizontal, 30)
                     
                 } else if currentPage < 2 {
                     Button {
@@ -77,24 +77,24 @@ struct OnboardingContainerView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(Color.primaryColor)
+                            .background(Color.actionColor)
                             .cornerRadius(16)
                     }
-                    .padding(.horizontal, 40)
+                    .padding(.horizontal, 30)
                     
                 } else {
                     Button {
                         hasCompletedOnboarding = true
                     } label: {
-                        Text("Next")
+                        Text("Let's Explore")
                             .font(.custom("Inter", size: 18).weight(.semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(Color.primaryColor)
+                            .background(Color.actionColor)
                             .cornerRadius(16)
                     }
-                    .padding(.horizontal, 40)
+                    .padding(.horizontal, 30)
 
                 }
             }

@@ -11,7 +11,7 @@ import Combine
 import Vision
 import CoreLocation
 import ImageIO
-import CoreLocation
+import Photos
 
 @MainActor
 class PhotoViewModel: ObservableObject {
@@ -33,29 +33,51 @@ class PhotoViewModel: ObservableObject {
     }
     private let geminiEndpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
     
-    func processPhoto(_ image: UIImage) async {
+    func processPhoto(_ image: UIImage, asset: PHAsset? = nil) async {
         isProcessing = true
         
-        // Extract GPS location from photo EXIF data
-        let gpsLocation = await extractGPSLocation(from: image)
+        // Extract GPS location from photo EXIF data or PHAsset
+        var gpsLocation: String?
+        var gpsCoordinate: CLLocationCoordinate2D?
+        
+        // First try to get location from PHAsset (when selected from library)
+        if let asset = asset, let location = asset.location {
+            gpsCoordinate = location.coordinate
+            gpsLocation = await reverseGeocode(location)
+            print("📍 Got GPS from Photos library asset: \(gpsLocation ?? "nil") at (\(gpsCoordinate!.latitude), \(gpsCoordinate!.longitude))")
+        } else {
+            // Fallback to EXIF extraction (for camera photos)
+            let extracted = await extractGPSLocationAndCoordinate(from: image)
+            gpsLocation = extracted.location
+            gpsCoordinate = extracted.coordinate
+            print("📍 Got GPS from EXIF data: \(gpsLocation ?? "nil")")
+        }
         
         // Use Google Gemini for AI-powered image analysis
         let geminiAnalysis = await analyzeWithGemini(image, gpsHint: gpsLocation)
         
         // Fallback to Vision framework if Gemini fails
         if let analysis = geminiAnalysis {
+            // IMPORTANT: Use the actual GPS location from the photo, not AI's guess
+            // Only use AI's location if we don't have GPS data
+            let actualLocation = gpsLocation ?? analysis.location
+            
             currentPhoto = PhotoEntry(
                 image: image,
                 imageName: "captured_photo_\(Date().timeIntervalSince1970)",
                 dateTaken: Date(),
-                location: analysis.location,
+                location: actualLocation,  // Use GPS location if available
                 caption: analysis.caption,
                 locationName: analysis.locationName,
                 aiDescription: analysis.description,
                 fact1: analysis.fact1,
                 fact2: analysis.fact2,
-                fact3: analysis.fact3
+                fact3: analysis.fact3,
+                latitude: gpsCoordinate?.latitude,
+                longitude: gpsCoordinate?.longitude
             )
+            
+            print("📍 Final location used: \(actualLocation ?? "Unknown") (GPS: \(gpsLocation != nil ? "✓" : "✗"))")
         } else {
             // Fallback to local Vision analysis
             let visionAnalysis = await analyzeImageWithVision(image)
@@ -69,8 +91,29 @@ class PhotoViewModel: ObservableObject {
                 aiDescription: visionAnalysis.description,
                 fact1: nil,
                 fact2: nil,
-                fact3: nil
+                fact3: nil,
+                latitude: gpsCoordinate?.latitude,
+                longitude: gpsCoordinate?.longitude
             )
+        }
+        
+        // Save to calendar only if we have valid location data
+        if let photo = currentPhoto,
+           let locationName = photo.locationName,
+           !locationName.isEmpty {
+            // Filter out invalid locations
+            let invalidKeywords = ["unknown", "location not determined", "ensure", "api", "configured", "captured scene"]
+            let lowercasedName = locationName.lowercased()
+            let isInvalid = invalidKeywords.contains { lowercasedName.contains($0) }
+            
+            if !isInvalid {
+                CalendarViewModel.shared.savePhoto(photo)
+                print("✅ Photo saved to calendar: \(locationName)")
+            } else {
+                print("❌ Photo NOT saved - invalid location: \(locationName)")
+            }
+        } else {
+            print("❌ Photo NOT saved - no location name")
         }
         
         isProcessing = false
@@ -83,14 +126,14 @@ class PhotoViewModel: ObservableObject {
     
     // MARK: - GPS Location Extraction
     
-    private func extractGPSLocation(from image: UIImage) async -> String? {
+    private func extractGPSLocationAndCoordinate(from image: UIImage) async -> (location: String?, coordinate: CLLocationCoordinate2D?) {
         // Get EXIF metadata from image
         guard let imageData = image.jpegData(compressionQuality: 1.0),
               let imageSource = CGImageSourceCreateWithData(imageData as CFData, nil),
               let metadata = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [String: Any],
               let gpsData = metadata[kCGImagePropertyGPSDictionary as String] as? [String: Any] else {
             print("📍 No GPS data found in image EXIF")
-            return nil
+            return (nil, nil)
         }
         
         // Extract latitude and longitude
@@ -99,7 +142,7 @@ class PhotoViewModel: ObservableObject {
               let latRef = gpsData[kCGImagePropertyGPSLatitudeRef as String] as? String,
               let lonRef = gpsData[kCGImagePropertyGPSLongitudeRef as String] as? String else {
             print("📍 GPS data incomplete")
-            return nil
+            return (nil, nil)
         }
         
         // Adjust signs based on hemisphere
@@ -109,7 +152,14 @@ class PhotoViewModel: ObservableObject {
         print("📍 GPS coordinates: \(finalLatitude), \(finalLongitude)")
         
         // Reverse geocode to get location name
-        let location = CLLocation(latitude: finalLatitude, longitude: finalLongitude)
+        let clLocation = CLLocation(latitude: finalLatitude, longitude: finalLongitude)
+        let locationString = await reverseGeocode(clLocation)
+        let coordinate = CLLocationCoordinate2D(latitude: finalLatitude, longitude: finalLongitude)
+        
+        return (locationString, coordinate)
+    }
+    
+    private func reverseGeocode(_ location: CLLocation) async -> String? {
         let geocoder = CLGeocoder()
         
         do {
@@ -117,10 +167,13 @@ class PhotoViewModel: ObservableObject {
             if let placemark = placemarks.first {
                 var locationParts: [String] = []
                 
-                // Add locality (city) if available
-                if let locality = placemark.locality {
+                // Add sublocality or locality (city/town) - prefer sublocality for more specific areas
+                if let subLocality = placemark.subLocality {
+                    locationParts.append(subLocality)
+                } else if let locality = placemark.locality {
                     locationParts.append(locality)
                 }
+                
                 // Add country
                 if let country = placemark.country {
                     locationParts.append(country)
@@ -128,6 +181,7 @@ class PhotoViewModel: ObservableObject {
                 
                 let locationString = locationParts.joined(separator: ", ")
                 print("📍 Reverse geocoded to: \(locationString)")
+                print("   Full placemark details: locality=\(placemark.locality ?? "nil"), subLocality=\(placemark.subLocality ?? "nil"), administrativeArea=\(placemark.administrativeArea ?? "nil")")
                 return locationString.isEmpty ? nil : locationString
             }
         } catch {
@@ -158,22 +212,22 @@ class PhotoViewModel: ObservableObject {
         let base64Image = imageData.base64EncodedString()
         
         // Create detailed prompt for travel analysis with optional GPS hint
-        let gpsPromptAddition = gpsHint != nil ? "\n\nThe photo was taken at or near: \(gpsHint!). Use this to help identify the specific landmark or location if visible in the image." : ""
+        let gpsPromptAddition = gpsHint != nil ? "\n\n⚠️ IMPORTANT: This photo was taken at GPS location: \(gpsHint!). The 'location' field must be exactly this: '\(gpsHint!)'. Use this GPS data to help identify the specific landmark or attraction that is visible near this location in the image." : ""
         
         let prompt = """
         You are an expert travel guide analyzing a photo. Provide a detailed analysis in JSON format with these exact fields:
         
         {
-          "locationName": "The specific name of the landmark, monument, city, or natural feature (e.g., 'Eiffel Tower', 'Grand Canyon', 'Tokyo Tower')",
-          "location": "Full location with city and country (e.g., 'Paris, France', 'Arizona, USA', 'Tokyo, Japan')",
-          "caption": "A short 3-5 word description (e.g., 'Iconic iron tower', 'Majestic natural wonder')",
+          "locationName": "The specific name of the landmark, monument, city, or natural feature visible in the image (e.g., 'Solfatara Crater', 'Rione Terra', 'Flavian Amphitheater')",
+          "location": "Full location with city and country - USE THE GPS LOCATION PROVIDED IF AVAILABLE",
+          "caption": "A short 3-5 word description (e.g., 'Ancient volcanic crater', 'Historic waterfront district')",
           "description": "A detailed 3-4 sentence description including: what this place is, its historical/cultural significance, interesting facts, and why it's worth visiting",
-          "fact1": "First interesting historical or cultural fact (e.g., 'Built in 1889 for the World's Fair')",
-          "fact2": "Second interesting fact about visitor experience or significance (e.g., 'Most visited paid monument in the world')",
-          "fact3": "Third architectural or cultural fact (e.g., 'Named after engineer Gustave Eiffel')"
+          "fact1": "First interesting historical or cultural fact",
+          "fact2": "Second interesting fact about visitor experience or significance",
+          "fact3": "Third architectural or cultural fact"
         }\(gpsPromptAddition)
         
-        Be specific with landmark names and locations. Include the city AND country in the location field. Make facts concise but interesting.
+        Be specific with landmark names. If GPS location is provided, you MUST use it exactly for the 'location' field. Identify the specific landmark or attraction near that GPS location.
         
         Respond ONLY with valid JSON, no other text.
         """

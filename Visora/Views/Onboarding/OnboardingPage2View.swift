@@ -21,36 +21,36 @@ struct OnboardingPage2View: View {
             // Text content
             VStack(spacing: 24) {
                 VStack(spacing: 4) {
-                    Text("It's a big world out")
-                        .font(.custom("Montserrat", size: 38).weight(.black))
+                    Text("Discover landmarks")
+                        .font(.custom("Montserrat", size: 34).weight(.black))
                         .foregroundColor(.textColor)
                     
                     HStack(spacing: 8) {
-                        Text("there go")
-                            .font(.custom("Montserrat", size: 38).weight(.black))
+                        Text("with")
+                            .font(.custom("Montserrat", size: 34).weight(.black))
                             .foregroundColor(.textColor)
                         
                         ZStack(alignment: .bottom) {
-                            Text("explore")
-                                .font(.custom("Montserrat", size: 38).weight(.black))
-                                .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.2))
+                            Text("AI insights")
+                                .font(.custom("Montserrat", size: 34).weight(.black))
+                                .foregroundColor(Color.actionColor)
                             
                             CurvedUnderline()
-                                .fill(Color(red: 1.0, green: 0.45, blue: 0.2))
-                                .frame(width: 125, height: 9)
-                                .offset(y: 22)
+                                .fill(Color.actionColor)
+                                .frame(width: 162, height: 8)
+                                .offset(y: 24)
                         }
                     }
                 }
                 .padding(.top, 40)
                 
-                Text("To get the best of your adventure you\njust need to leave and go where you like.\nwe are waiting for you")
+                Text("Snap a photo and instantly learn the\nhistory, culture, and fascinating facts\nabout any landmark around the world")
                     .font(.custom("Nunito Sans", size: 17))
                     .foregroundColor(.subTextColor)
                     .multilineTextAlignment(.center)
                     .padding(.top, 16)
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 30)
             
             Spacer()
         }

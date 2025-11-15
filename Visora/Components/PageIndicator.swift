@@ -17,7 +17,7 @@ struct PageIndicator: View {
                 if currentPage == index {
                     // Active indicator - elongated capsule
                     Capsule()
-                        .fill(Color.primaryColor)
+                        .fill(Color.actionColor)
                         .frame(width: 30, height: 8)
                         .transition(.scale)
                 } else {

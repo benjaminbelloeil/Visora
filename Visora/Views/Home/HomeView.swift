@@ -135,7 +135,7 @@ struct HomeView: View {
                 }
                 .padding(.vertical, 8)
             }
-            .background(Color.white)
+            .background(Color.cardBackground)
             .onAppear {
                 viewModel.loadFeaturedDestinations()
             }
