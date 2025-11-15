@@ -19,6 +19,7 @@ class MapViewModel: NSObject, ObservableObject {
     
     private let locationManager = CLLocationManager()
     private var cancellables = Set<AnyCancellable>()
+    private var hasSetInitialPosition = false
     
     override init() {
         super.init()
@@ -44,24 +45,63 @@ class MapViewModel: NSObject, ObservableObject {
         let allPhotos = CalendarViewModel.shared.photosByDate.values.flatMap { $0 }
         photoPins = allPhotos.filter { $0.coordinate != nil }
         
-        print("🗺️ Loaded \(photoPins.count) photos with GPS coordinates for map")
-        
-        // Center map on first photo or user location
-        if let firstPhoto = photoPins.first, let coordinate = firstPhoto.coordinate {
-            let region = MKCoordinateRegion(
-                center: coordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
-            )
-            cameraPosition = MapCameraPosition.region(region)
-        } else if let userLocation = locationManager.location {
-            let region = MKCoordinateRegion(
-                center: userLocation.coordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            )
-            cameraPosition = MapCameraPosition.region(region)
+        // Only set initial position once
+        if !hasSetInitialPosition {
+            setInitialCameraPosition()
+            hasSetInitialPosition = true
         }
         
         isLoading = false
+    }
+    
+    private func setInitialCameraPosition() {
+        // Center map on first photo or show a nice world view
+        if let firstPhoto = photoPins.first, let coordinate = firstPhoto.coordinate {
+            let region = MKCoordinateRegion(
+                center: coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
+            )
+            cameraPosition = .region(region)
+        } else if !photoPins.isEmpty {
+            // Calculate the center of all pins
+            let coordinates = photoPins.compactMap { $0.coordinate }
+            let center = calculateCenterCoordinate(coordinates: coordinates)
+            let region = MKCoordinateRegion(
+                center: center,
+                span: MKCoordinateSpan(latitudeDelta: 20, longitudeDelta: 20)
+            )
+            cameraPosition = .region(region)
+        } else {
+            // Default to world view if no photos
+            let region = MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: 20, longitude: 0),
+                span: MKCoordinateSpan(latitudeDelta: 60, longitudeDelta: 60)
+            )
+            cameraPosition = .region(region)
+        }
+    }
+    
+    private func calculateCenterCoordinate(coordinates: [CLLocationCoordinate2D]) -> CLLocationCoordinate2D {
+        guard !coordinates.isEmpty else {
+            return CLLocationCoordinate2D(latitude: 0, longitude: 0)
+        }
+        
+        var minLat = coordinates[0].latitude
+        var maxLat = coordinates[0].latitude
+        var minLon = coordinates[0].longitude
+        var maxLon = coordinates[0].longitude
+        
+        for coordinate in coordinates {
+            minLat = min(minLat, coordinate.latitude)
+            maxLat = max(maxLat, coordinate.latitude)
+            minLon = min(minLon, coordinate.longitude)
+            maxLon = max(maxLon, coordinate.longitude)
+        }
+        
+        return CLLocationCoordinate2D(
+            latitude: (minLat + maxLat) / 2,
+            longitude: (minLon + maxLon) / 2
+        )
     }
     
     func centerOnUserLocation() {
@@ -73,23 +113,35 @@ class MapViewModel: NSObject, ObservableObject {
             cameraPosition = MapCameraPosition.region(region)
         }
     }
+    
+    func getCurrentLocation() -> CLLocationCoordinate2D? {
+        return locationManager.location?.coordinate
+    }
+    
+    func allPinsAtSameLocation() -> Bool {
+        guard photoPins.count > 1 else { return false }
+        
+        // Get first pin's coordinates
+        guard let firstCoord = photoPins.first?.coordinate else { return false }
+        
+        // Check if all other pins are at the same location (within 0.001 degrees, ~100m)
+        let tolerance = 0.001
+        return photoPins.allSatisfy { photo in
+            guard let coord = photo.coordinate else { return false }
+            let latDiff = abs(coord.latitude - firstCoord.latitude)
+            let lonDiff = abs(coord.longitude - firstCoord.longitude)
+            return latDiff < tolerance && lonDiff < tolerance
+        }
+    }
 }
 
 // MARK: - CLLocationManagerDelegate
 extension MapViewModel: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last else { return }
-        
-        // Only center on user if no photos yet
-        if photoPins.isEmpty {
-            let region = MKCoordinateRegion(
-                center: location.coordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            )
-            cameraPosition = MapCameraPosition.region(region)
+        // Load photos but don't force camera position after initial load
+        if !hasSetInitialPosition {
+            loadPhotoPins()
         }
-        
-        loadPhotoPins()
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -97,7 +149,6 @@ extension MapViewModel: CLLocationManagerDelegate {
         case .authorizedWhenInUse, .authorizedAlways:
             locationManager.startUpdatingLocation()
         case .denied, .restricted:
-            print("Location access denied")
             // Load photos anyway
             loadPhotoPins()
         case .notDetermined:

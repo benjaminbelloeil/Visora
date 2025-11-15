@@ -17,8 +17,17 @@ import Photos
 class PhotoViewModel: ObservableObject {
     @Published var currentPhoto: PhotoEntry?
     @Published var isProcessing = false
+    @Published var saveSuccess = false
+    @Published var saveError: String?
     
     private let locationManager = CLLocationManager()
+    
+    init() {
+        // Configure location manager
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingLocation()
+    }
     
     // MARK: - Google Gemini API Configuration
     
@@ -44,29 +53,40 @@ class PhotoViewModel: ObservableObject {
         if let asset = asset, let location = asset.location {
             gpsCoordinate = location.coordinate
             gpsLocation = await reverseGeocode(location)
-            print("📍 Got GPS from Photos library asset: \(gpsLocation ?? "nil") at (\(gpsCoordinate!.latitude), \(gpsCoordinate!.longitude))")
         } else {
             // Fallback to EXIF extraction (for camera photos)
             let extracted = await extractGPSLocationAndCoordinate(from: image)
             gpsLocation = extracted.location
             gpsCoordinate = extracted.coordinate
-            print("📍 Got GPS from EXIF data: \(gpsLocation ?? "nil")")
         }
         
-        // Use Google Gemini for AI-powered image analysis
+        // Use Google Gemini for AI-powered image analysis (do this BEFORE using device location)
         let geminiAnalysis = await analyzeWithGemini(image, gpsHint: gpsLocation)
+        
+        // No landmark match and no GPS from photo - geocode the AI's location string
+        if let analysis = geminiAnalysis, gpsCoordinate == nil {
+            if let geocodedCoordinate = await forwardGeocode(analysis.location) {
+                gpsCoordinate = geocodedCoordinate
+                gpsLocation = analysis.location // Use AI's location string
+            }
+        }
+        
+        // Only NOW use device location as final fallback if still no GPS
+        if gpsCoordinate == nil, let currentLocation = locationManager.location {
+            gpsCoordinate = currentLocation.coordinate
+            gpsLocation = await reverseGeocode(currentLocation)
+        }
         
         // Fallback to Vision framework if Gemini fails
         if let analysis = geminiAnalysis {
-            // IMPORTANT: Use the actual GPS location from the photo, not AI's guess
-            // Only use AI's location if we don't have GPS data
+            // Use the actual GPS location (from EXIF, landmark, or device)
             let actualLocation = gpsLocation ?? analysis.location
             
             currentPhoto = PhotoEntry(
                 image: image,
                 imageName: "captured_photo_\(Date().timeIntervalSince1970)",
                 dateTaken: Date(),
-                location: actualLocation,  // Use GPS location if available
+                location: actualLocation,
                 caption: analysis.caption,
                 locationName: analysis.locationName,
                 aiDescription: analysis.description,
@@ -76,8 +96,6 @@ class PhotoViewModel: ObservableObject {
                 latitude: gpsCoordinate?.latitude,
                 longitude: gpsCoordinate?.longitude
             )
-            
-            print("📍 Final location used: \(actualLocation ?? "Unknown") (GPS: \(gpsLocation != nil ? "✓" : "✗"))")
         } else {
             // Fallback to local Vision analysis
             let visionAnalysis = await analyzeImageWithVision(image)
@@ -108,12 +126,7 @@ class PhotoViewModel: ObservableObject {
             
             if !isInvalid {
                 CalendarViewModel.shared.savePhoto(photo)
-                print("✅ Photo saved to calendar: \(locationName)")
-            } else {
-                print("❌ Photo NOT saved - invalid location: \(locationName)")
             }
-        } else {
-            print("❌ Photo NOT saved - no location name")
         }
         
         isProcessing = false
@@ -122,6 +135,48 @@ class PhotoViewModel: ObservableObject {
     func reset() {
         currentPhoto = nil
         isProcessing = false
+        saveSuccess = false
+        saveError = nil
+    }
+    
+    func saveToPhotoLibrary() {
+        guard let photo = currentPhoto, let image = photo.image else {
+            saveError = "No photo to save"
+            return
+        }
+        
+        // Request permission and save
+        PHPhotoLibrary.requestAuthorization { [weak self] status in
+            guard status == .authorized else {
+                DispatchQueue.main.async {
+                    self?.saveError = "Photo library access denied"
+                }
+                return
+            }
+            
+            // Save the photo
+            PHPhotoLibrary.shared().performChanges({
+                let creationRequest = PHAssetCreationRequest.forAsset()
+                creationRequest.addResource(with: .photo, data: image.jpegData(compressionQuality: 1.0)!, options: nil)
+                
+                // Add location if available
+                if let lat = photo.latitude, let lon = photo.longitude {
+                    creationRequest.location = CLLocation(latitude: lat, longitude: lon)
+                }
+                
+                // Set creation date
+                creationRequest.creationDate = photo.dateTaken
+                
+            }) { success, error in
+                DispatchQueue.main.async {
+                    if success {
+                        self?.saveSuccess = true
+                    } else {
+                        self?.saveError = error?.localizedDescription ?? "Failed to save photo"
+                    }
+                }
+            }
+        }
     }
     
     // MARK: - GPS Location Extraction
@@ -132,7 +187,6 @@ class PhotoViewModel: ObservableObject {
               let imageSource = CGImageSourceCreateWithData(imageData as CFData, nil),
               let metadata = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [String: Any],
               let gpsData = metadata[kCGImagePropertyGPSDictionary as String] as? [String: Any] else {
-            print("📍 No GPS data found in image EXIF")
             return (nil, nil)
         }
         
@@ -141,15 +195,12 @@ class PhotoViewModel: ObservableObject {
               let longitude = gpsData[kCGImagePropertyGPSLongitude as String] as? Double,
               let latRef = gpsData[kCGImagePropertyGPSLatitudeRef as String] as? String,
               let lonRef = gpsData[kCGImagePropertyGPSLongitudeRef as String] as? String else {
-            print("📍 GPS data incomplete")
             return (nil, nil)
         }
         
         // Adjust signs based on hemisphere
         let finalLatitude = latRef == "S" ? -latitude : latitude
         let finalLongitude = lonRef == "W" ? -longitude : longitude
-        
-        print("📍 GPS coordinates: \(finalLatitude), \(finalLongitude)")
         
         // Reverse geocode to get location name
         let clLocation = CLLocation(latitude: finalLatitude, longitude: finalLongitude)
@@ -160,6 +211,13 @@ class PhotoViewModel: ObservableObject {
     }
     
     private func reverseGeocode(_ location: CLLocation) async -> String? {
+        #if compiler(>=6.0)
+        if #available(iOS 26.0, *) {
+            // Use new MapKit API when available
+            return nil // TODO: Implement MKReverseGeocodingRequest when targeting iOS 26+
+        }
+        #endif
+        
         let geocoder = CLGeocoder()
         
         do {
@@ -180,12 +238,26 @@ class PhotoViewModel: ObservableObject {
                 }
                 
                 let locationString = locationParts.joined(separator: ", ")
-                print("📍 Reverse geocoded to: \(locationString)")
-                print("   Full placemark details: locality=\(placemark.locality ?? "nil"), subLocality=\(placemark.subLocality ?? "nil"), administrativeArea=\(placemark.administrativeArea ?? "nil")")
                 return locationString.isEmpty ? nil : locationString
             }
         } catch {
-            print("📍 Reverse geocoding failed: \(error.localizedDescription)")
+            // Geocoding failed
+        }
+        
+        return nil
+    }
+    
+    // Forward geocode: Convert location name (e.g., "Florence, Italy") to GPS coordinates
+    private func forwardGeocode(_ locationName: String) async -> CLLocationCoordinate2D? {
+        let geocoder = CLGeocoder()
+        
+        do {
+            let placemarks = try await geocoder.geocodeAddressString(locationName)
+            if let placemark = placemarks.first, let location = placemark.location {
+                return location.coordinate
+            }
+        } catch {
+            // Geocoding failed silently
         }
         
         return nil
@@ -196,13 +268,7 @@ class PhotoViewModel: ObservableObject {
     private func analyzeWithGemini(_ image: UIImage, gpsHint: String?) async -> (location: String, locationName: String, caption: String, description: String, fact1: String, fact2: String, fact3: String)? {
         // Check if API key is set
         guard geminiAPIKey != "YOUR_GEMINI_API_KEY_HERE" && !geminiAPIKey.isEmpty else {
-            print("⚠️ Gemini API key not set. Get your FREE key at: https://makersuite.google.com/app/apikey")
             return nil
-        }
-        
-        print("🔍 Analyzing image with Gemini AI...")
-        if let gps = gpsHint {
-            print("📍 GPS location hint: \(gps)")
         }
         
         // Convert image to base64
@@ -277,18 +343,10 @@ class PhotoViewModel: ObservableObject {
             let (data, response) = try await URLSession.shared.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse else {
-                print("❌ Invalid HTTP response from Gemini")
                 return nil
             }
             
-            print("📡 Gemini API response status: \(httpResponse.statusCode)")
-            
             if httpResponse.statusCode != 200 {
-                if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                    print("❌ Gemini API error: \(errorJson)")
-                } else if let errorString = String(data: data, encoding: .utf8) {
-                    print("❌ Gemini error response: \(errorString)")
-                }
                 return nil
             }
             
@@ -301,26 +359,18 @@ class PhotoViewModel: ObservableObject {
                let firstPart = parts.first,
                let text = firstPart["text"] as? String {
                 
-                print("✅ Gemini response received, parsing...")
                 // Parse the JSON response from Gemini
                 return parseGeminiResponse(text)
-            } else {
-                print("❌ Failed to parse Gemini response structure")
-                if let debugJson = try? JSONSerialization.jsonObject(with: data) {
-                    print("Debug - Full response: \(debugJson)")
-                }
             }
             
         } catch {
-            print("❌ Gemini request error: \(error.localizedDescription)")
+            // Request failed silently
         }
         
         return nil
     }
     
     private func parseGeminiResponse(_ text: String) -> (location: String, locationName: String, caption: String, description: String, fact1: String, fact2: String, fact3: String)? {
-        print("📝 Parsing Gemini text: \(text.prefix(100))...")
-        
         // Clean up the response - remove markdown code blocks if present
         var cleanedText = text
         if cleanedText.contains("```json") {
@@ -334,12 +384,8 @@ class PhotoViewModel: ObservableObject {
         // Parse JSON
         guard let jsonData = cleanedText.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: String] else {
-            print("❌ Failed to parse Gemini JSON response")
-            print("Cleaned text was: \(cleanedText)")
             return nil
         }
-        
-        print("✅ Successfully parsed JSON from Gemini!")
         
         let locationName = json["locationName"] ?? "Unknown Location"
         let location = json["location"] ?? "Unknown"

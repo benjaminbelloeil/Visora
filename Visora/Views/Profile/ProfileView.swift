@@ -61,14 +61,17 @@ struct ProfileView: View {
                 Section {
                     NavigationLink(destination: EditProfileView(profile: viewModel.userProfile)) {
                         Label("Edit Profile", systemImage: "pencil")
+                            .foregroundColor(.textColor)
                     }
                     
                     NavigationLink(destination: Text("Settings")) {
                         Label("Settings", systemImage: "gear")
+                            .foregroundColor(.textColor)
                     }
                     
                     NavigationLink(destination: Text("Privacy")) {
                         Label("Privacy", systemImage: "lock.shield")
+                            .foregroundColor(.textColor)
                     }
                 }
                 
@@ -76,14 +79,17 @@ struct ProfileView: View {
                 Section {
                     NavigationLink(destination: Text("About")) {
                         Label("About Visora", systemImage: "info.circle")
+                            .foregroundColor(.textColor)
                     }
                     
                     NavigationLink(destination: Text("Help")) {
                         Label("Help & Support", systemImage: "questionmark.circle")
+                            .foregroundColor(.textColor)
                     }
                 }
             }
             .navigationTitle("Profile")
+            .tint(.actionColor)
         }
     }
 }

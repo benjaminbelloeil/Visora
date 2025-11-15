@@ -17,7 +17,7 @@ struct DestinationCard: View {
             Rectangle()
                 .foregroundColor(.clear)
                 .frame(width: 268, height: 384)
-                .background(Color.white)
+                .background(Color.cardSurface)
                 .cornerRadius(24)
                 .shadow(
                     color: Color.black.opacity(0.08),
@@ -62,7 +62,7 @@ struct DestinationCard: View {
                     .font(Font.custom("SF Pro", size: 18))
                     .tracking(0.50)
                     .lineSpacing(24)
-                    .foregroundColor(Color(red: 0.11, green: 0.12, blue: 0.16))
+                    .foregroundColor(.textColor)
                 Spacer()
             }
             .frame(width: 240)
@@ -79,7 +79,7 @@ struct DestinationCard: View {
                         .font(Font.custom("Inter", size: 15))
                         .tracking(0.30)
                         .lineSpacing(20)
-                        .foregroundColor(Color(red: 0.11, green: 0.12, blue: 0.16))
+                        .foregroundColor(.textColor)
                 }
                 .offset(x: 102, y: 134)
             }
@@ -87,14 +87,14 @@ struct DestinationCard: View {
             // Location with pin icon
             HStack(spacing: 4) {
                 Image(systemName: "mappin.circle.fill")
-                    .foregroundColor(Color(red: 0.49, green: 0.52, blue: 0.55))
+                    .foregroundColor(.subTextColor)
                     .font(.system(size: 14))
                 
                 Text(destination.country)
                     .font(Font.custom("Inter", size: 15))
                     .tracking(0.30)
                     .lineSpacing(20)
-                    .foregroundColor(Color(red: 0.49, green: 0.52, blue: 0.55))
+                    .foregroundColor(.subTextColor)
                 
                 Spacer()
             }

@@ -114,28 +114,57 @@ struct HomeView: View {
                         }
                         .padding(.horizontal, 15)
                         
-                        // Map preview
-                        Map(initialPosition: .region(MKCoordinateRegion(
-                            center: CLLocationCoordinate2D(latitude: 48.8566, longitude: 2.3522),
-                            span: MKCoordinateSpan(latitudeDelta: 15, longitudeDelta: 15)
-                        ))) {
-                            ForEach(viewModel.featuredDestinations) { destination in
-                                Marker(destination.name, coordinate: destination.coordinate)
-                                    .tint(Color(red: 1.0, green: 0.45, blue: 0.2))
+                        // Map preview showing actual calendar photos
+                        let calendarPhotos = CalendarViewModel.shared.photosByDate.values.flatMap { $0 }.filter { $0.coordinate != nil }
+                        
+                        if !calendarPhotos.isEmpty {
+                            // Calculate center of all photos
+                            let coordinates = calendarPhotos.compactMap { $0.coordinate }
+                            let centerLat = coordinates.map { $0.latitude }.reduce(0, +) / Double(coordinates.count)
+                            let centerLon = coordinates.map { $0.longitude }.reduce(0, +) / Double(coordinates.count)
+                            
+                            Map(initialPosition: .region(MKCoordinateRegion(
+                                center: CLLocationCoordinate2D(latitude: centerLat, longitude: centerLon),
+                                span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
+                            ))) {
+                                ForEach(calendarPhotos) { photo in
+                                    if let coordinate = photo.coordinate {
+                                        Marker(photo.locationName ?? "Unknown", coordinate: coordinate)
+                                            .tint(Color(red: 1.0, green: 0.45, blue: 0.2))
+                                    }
+                                }
                             }
+                            .frame(height: 200)
+                            .cornerRadius(20)
+                            .padding(.horizontal, 10)
+                            .onTapGesture {
+                                selectedTab = 3 // Switch to Map tab
+                            }
+                            .allowsHitTesting(true)
+                        } else {
+                            // Show sample destinations if no photos yet
+                            Map(initialPosition: .region(MKCoordinateRegion(
+                                center: CLLocationCoordinate2D(latitude: 48.8566, longitude: 2.3522),
+                                span: MKCoordinateSpan(latitudeDelta: 15, longitudeDelta: 15)
+                            ))) {
+                                ForEach(viewModel.featuredDestinations) { destination in
+                                    Marker(destination.name, coordinate: destination.coordinate)
+                                        .tint(Color(red: 1.0, green: 0.45, blue: 0.2))
+                                }
+                            }
+                            .frame(height: 200)
+                            .cornerRadius(20)
+                            .padding(.horizontal, 10)
+                            .onTapGesture {
+                                selectedTab = 3 // Switch to Map tab
+                            }
+                            .allowsHitTesting(true)
                         }
-                        .frame(height: 200)
-                        .cornerRadius(20)
-                        .padding(.horizontal, 10)
-                        .onTapGesture {
-                            selectedTab = 3 // Switch to Map tab
-                        }
-                        .allowsHitTesting(true)
                     }
                 }
                 .padding(.vertical, 8)
             }
-            .background(Color.white)
+            .background(Color.appBackground)
             .onAppear {
                 viewModel.loadFeaturedDestinations()
             }

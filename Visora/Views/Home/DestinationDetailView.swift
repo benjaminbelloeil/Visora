@@ -80,7 +80,7 @@ struct DestinationDetailView: View {
                             .foregroundColor(.subTextColor)
                             .lineSpacing(6)
                             .padding()
-                            .background(Color(red: 0.97, green: 0.97, blue: 0.98))
+                            .background(Color.cardBackground)
                             .cornerRadius(12)
                     }
                     
@@ -99,6 +99,7 @@ struct DestinationDetailView: View {
                         }
                         .frame(height: 200)
                         .cornerRadius(20)
+                        .tint(.actionColor)
                     }
                 }
                 .padding(20)
@@ -106,6 +107,7 @@ struct DestinationDetailView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .ignoresSafeArea(edges: .top)
+        .background(Color.appBackground)
     }
 }
 

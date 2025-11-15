@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import UIKit
+import CoreLocation
 
 @MainActor
 class CalendarViewModel: ObservableObject {
@@ -57,8 +58,6 @@ class CalendarViewModel: ObservableObject {
                     }
                 }
             }
-            
-            print("✅ Loaded \(savedPhotos.count) photos from storage")
         }
         
         isLoading = false
@@ -84,8 +83,6 @@ class CalendarViewModel: ObservableObject {
         
         // Save metadata to UserDefaults
         persistPhotos()
-        
-        print("📅 Photo saved to calendar and persisted for date: \(startOfDay)")
     }
     
     private func persistPhotos() {
@@ -95,7 +92,6 @@ class CalendarViewModel: ObservableObject {
         // Encode and save to UserDefaults
         if let encoded = try? JSONEncoder().encode(allPhotos) {
             UserDefaults.standard.set(encoded, forKey: userDefaultsKey)
-            print("💾 Persisted \(allPhotos.count) photos to UserDefaults")
         }
     }
     
@@ -105,8 +101,177 @@ class CalendarViewModel: ObservableObject {
         return photosByDate[startOfDay]
     }
     
-    func datesWithPhotos() -> Set<Date> {
-        Set(photosByDate.keys)
+    // Add GPS coordinates to photos that don't have them (using current location)
+    func addGPSToPhotosWithoutLocation(currentLocation: CLLocationCoordinate2D) async {
+        var updatedPhotos: [PhotoEntry] = []
+        var updateCount = 0
+        
+        for (date, photos) in photosByDate {
+            for photo in photos {
+                if photo.latitude == nil || photo.longitude == nil {
+                    // Reverse geocode to get location name
+                    let geocoder = CLGeocoder()
+                    let location = CLLocation(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
+                    
+                    var locationString = photo.location
+                    if let placemarks = try? await geocoder.reverseGeocodeLocation(location),
+                       let placemark = placemarks.first {
+                        var locationParts: [String] = []
+                        if let locality = placemark.locality {
+                            locationParts.append(locality)
+                        }
+                        if let country = placemark.country {
+                            locationParts.append(country)
+                        }
+                        locationString = locationParts.joined(separator: ", ")
+                    }
+                    
+                    // Create new PhotoEntry with GPS coordinates
+                    let updatedPhoto = PhotoEntry(
+                        id: photo.id,
+                        image: photo.image,
+                        imageName: photo.imageName,
+                        dateTaken: photo.dateTaken,
+                        location: locationString,
+                        caption: photo.caption,
+                        locationName: photo.locationName,
+                        aiDescription: photo.aiDescription,
+                        fact1: photo.fact1,
+                        fact2: photo.fact2,
+                        fact3: photo.fact3,
+                        latitude: currentLocation.latitude,
+                        longitude: currentLocation.longitude
+                    )
+                    
+                    updateCount += 1
+                    updatedPhotos.append(updatedPhoto)
+                } else {
+                    // Photo already has GPS, keep as is
+                    updatedPhotos.append(photo)
+                }
+            }
+        }
+        
+        if updateCount > 0 {
+            // Rebuild the dictionary with updated photos
+            photosByDate.removeAll()
+            for photo in updatedPhotos {
+                let calendar = Calendar.current
+                let startOfDay = calendar.startOfDay(for: photo.dateTaken)
+                
+                if photosByDate[startOfDay] != nil {
+                    photosByDate[startOfDay]?.append(photo)
+                } else {
+                    photosByDate[startOfDay] = [photo]
+                }
+            }
+            
+            // Save the updated photos
+            persistPhotos()
+        }
+    }
+    
+    // Extract GPS from original photo files and restore correct locations
+    func restoreGPSFromImages() async {
+        var updatedPhotos: [PhotoEntry] = []
+        var updateCount = 0
+        
+        for (date, photos) in photosByDate {
+            for photo in photos {
+                // Try to get GPS from geocoding the location name or location string
+                if let locationName = photo.locationName, !locationName.isEmpty {
+                    
+                    // Try geocoding the location name
+                    let geocoder = CLGeocoder()
+                    
+                    // Try the location name first, then fallback to location string
+                    let addressToGeocode = locationName
+                    if let placemarks = try? await geocoder.geocodeAddressString(addressToGeocode),
+                       let placemark = placemarks.first,
+                       let location = placemark.location {
+                        
+                        var locationString = photo.location
+                        var locationParts: [String] = []
+                        if let locality = placemark.locality {
+                            locationParts.append(locality)
+                        }
+                        if let country = placemark.country {
+                            locationParts.append(country)
+                        }
+                        locationString = locationParts.joined(separator: ", ")
+                        
+                        let updatedPhoto = PhotoEntry(
+                            id: photo.id,
+                            image: photo.image,
+                            imageName: photo.imageName,
+                            dateTaken: photo.dateTaken,
+                            location: locationString,
+                            caption: photo.caption,
+                            locationName: photo.locationName,
+                            aiDescription: photo.aiDescription,
+                            fact1: photo.fact1,
+                            fact2: photo.fact2,
+                            fact3: photo.fact3,
+                            latitude: location.coordinate.latitude,
+                            longitude: location.coordinate.longitude
+                        )
+                        
+                        updateCount += 1
+                        updatedPhotos.append(updatedPhoto)
+                        continue
+                    }
+                    
+                    // If landmark name didn't work, try the AI's location string (e.g., "Florence, Italy")
+                    if let locationStr = photo.location, !locationStr.isEmpty {
+                        if let placemarks = try? await geocoder.geocodeAddressString(locationStr),
+                           let placemark = placemarks.first,
+                           let location = placemark.location {
+                            
+                            let updatedPhoto = PhotoEntry(
+                                id: photo.id,
+                                image: photo.image,
+                                imageName: photo.imageName,
+                                dateTaken: photo.dateTaken,
+                                location: locationStr,
+                                caption: photo.caption,
+                                locationName: photo.locationName,
+                                aiDescription: photo.aiDescription,
+                                fact1: photo.fact1,
+                                fact2: photo.fact2,
+                                fact3: photo.fact3,
+                                latitude: location.coordinate.latitude,
+                                longitude: location.coordinate.longitude
+                            )
+                            
+                            updateCount += 1
+                            updatedPhotos.append(updatedPhoto)
+                            continue
+                        }
+                    }
+                }
+                
+                // No GPS data found, keep as is
+                updatedPhotos.append(photo)
+            }
+        }
+        
+        if updateCount > 0 {
+            // Rebuild the dictionary with updated photos
+            photosByDate.removeAll()
+            for photo in updatedPhotos {
+                let calendar = Calendar.current
+                let startOfDay = calendar.startOfDay(for: photo.dateTaken)
+                
+                if photosByDate[startOfDay] != nil {
+                    photosByDate[startOfDay]?.append(photo)
+                } else {
+                    photosByDate[startOfDay] = [photo]
+                }
+            }
+            
+            // Save the updated photos
+            persistPhotos()
+        }
     }
     
     func deletePhoto(_ photo: PhotoEntry) {
@@ -127,8 +292,6 @@ class CalendarViewModel: ObservableObject {
         
         // Update UserDefaults
         persistPhotos()
-        
-        print("🗑️ Photo deleted: \(photo.id)")
     }
 }
 

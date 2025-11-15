@@ -54,7 +54,7 @@ struct OnboardingPage1View: View {
             
             Spacer()
         }
-        .background(Color.white)
+        .background(Color.appBackground)
         .ignoresSafeArea(edges: .top)
     }
 }

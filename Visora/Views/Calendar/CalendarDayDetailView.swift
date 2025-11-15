@@ -108,7 +108,7 @@ struct CalendarDayDetailView: View {
                                 .foregroundColor(.subTextColor)
                                 .lineSpacing(6)
                                 .padding()
-                                .background(Color(red: 0.97, green: 0.97, blue: 0.98))
+                                .background(Color.cardBackground)
                                 .cornerRadius(12)
                         }
                     }
@@ -133,7 +133,7 @@ struct CalendarDayDetailView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
-                        .background(Color.cardBackground)
+                        .background(Color.cardSurface)
                         .cornerRadius(12)
                         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
                         
@@ -155,7 +155,7 @@ struct CalendarDayDetailView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
-                        .background(Color.cardBackground)
+                        .background(Color.cardSurface)
                         .cornerRadius(12)
                         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
                     }
@@ -164,7 +164,7 @@ struct CalendarDayDetailView: View {
             }
         }
         .ignoresSafeArea(edges: .top)
-        .background(Color.white)
+        .background(Color.appBackground)
     }
 }
 

@@ -45,7 +45,7 @@ struct CalendarView: View {
                             showNotifications = true
                         }) {
                             Circle()
-                                .fill(Color(red: 0.97, green: 0.97, blue: 0.98))
+                                .fill(Color.cardBackground)
                                 .frame(width: 44, height: 44)
                                 .overlay(
                                     ZStack {
@@ -69,7 +69,7 @@ struct CalendarView: View {
                             .foregroundColor(.clear)
                             .frame(maxWidth: .infinity)
                             .frame(height: 148)
-                            .background(Color.white)
+                            .background(Color.cardSurface)
                             .cornerRadius(24)
                             .shadow(
                                 color: Color.black.opacity(0.08),
@@ -82,7 +82,7 @@ struct CalendarView: View {
                         Text(monthYearString(from: selectedDate))
                             .font(Font.custom("Inter", size: 20).weight(.semibold))
                             .lineSpacing(28)
-                            .foregroundColor(Color(red: 0.11, green: 0.12, blue: 0.16))
+                            .foregroundColor(.textColor)
                             .offset(x: -97, y: -44)
                         
                         // Navigation arrows
@@ -127,7 +127,7 @@ struct CalendarView: View {
                                 .font(Font.custom("Inter", size: 15))
                                 .tracking(0.30)
                                 .lineSpacing(20)
-                                .foregroundColor(isSelected ? .white : Color(red: 0.49, green: 0.52, blue: 0.55))
+                                .foregroundColor(isSelected ? .white : .subTextColor)
                                 .offset(x: xPosition, y: 4)
                             
                             // Day number (tappable)
@@ -138,7 +138,7 @@ struct CalendarView: View {
                                     .font(Font.custom("Inter", size: 16).weight(.bold))
                                     .tracking(0.30)
                                     .lineSpacing(20)
-                                    .foregroundColor(isSelected ? .white : Color(red: 0.11, green: 0.12, blue: 0.16))
+                                    .foregroundColor(isSelected ? .white : .textColor)
                             }
                             .offset(x: xPosition, y: 36)
                         }
@@ -231,7 +231,7 @@ struct CalendarView: View {
                 }
                 .padding(.vertical, 8)
             }
-            .background(Color.white)
+            .background(Color.appBackground)
             .sheet(isPresented: $showNotifications) {
                 NotificationsView()
                     .presentationDetents([.medium, .large])
@@ -308,7 +308,7 @@ struct CompactPhotoCard: View {
             )
         }
         .frame(height: 140)
-        .background(Color.white)
+        .background(Color.cardSurface)
         .cornerRadius(16)
         .shadow(color: Color(red: 0.71, green: 0.74, blue: 0.79, opacity: 0.12), radius: 16, y: 6)
     }
@@ -344,10 +344,10 @@ struct ScheduleCard: View {
                 HStack(spacing: 4) {
                     Image(systemName: "calendar")
                         .font(.system(size: 12))
-                        .foregroundColor(Color(red: 0.49, green: 0.52, blue: 0.55))
+                        .foregroundColor(.subTextColor)
                     Text(dateFormatter.string(from: photo.dateTaken))
                         .font(.custom("Inter", size: 13))
-                        .foregroundColor(Color(red: 0.49, green: 0.52, blue: 0.55))
+                        .foregroundColor(.subTextColor)
                 }
                 
                 Text(photo.locationName ?? "Unknown Location")
@@ -359,10 +359,10 @@ struct ScheduleCard: View {
                 HStack(spacing: 4) {
                     Image(systemName: "mappin.circle")
                         .font(.system(size: 12))
-                        .foregroundColor(Color(red: 0.49, green: 0.52, blue: 0.55))
+                        .foregroundColor(.subTextColor)
                     Text(photo.location ?? "Unknown")
                         .font(.custom("Inter", size: 13))
-                        .foregroundColor(Color(red: 0.49, green: 0.52, blue: 0.55))
+                        .foregroundColor(.subTextColor)
                         .lineLimit(1)
                 }
             }
@@ -370,11 +370,11 @@ struct ScheduleCard: View {
             Spacer()
             
             Image(systemName: "chevron.right")
-                .foregroundColor(Color(red: 0.49, green: 0.52, blue: 0.55))
+                .foregroundColor(.subTextColor)
         }
         .padding(20)
         .frame(maxWidth: .infinity)
-        .background(Color.white)
+        .background(Color.cardSurface)
         .cornerRadius(20)
         .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 4)
     }

@@ -131,7 +131,7 @@ struct PhotoResultView: View {
                                 .foregroundColor(.subTextColor)
                                 .lineSpacing(6)
                                 .padding()
-                                .background(Color(red: 0.97, green: 0.97, blue: 0.98))
+                                .background(Color.cardBackground)
                                 .cornerRadius(12)
                         }
                     }
@@ -156,7 +156,7 @@ struct PhotoResultView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
-                        .background(Color.white)
+                        .background(Color.cardSurface)
                         .cornerRadius(12)
                         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
                         
@@ -178,45 +178,42 @@ struct PhotoResultView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
-                        .background(Color.white)
+                        .background(Color.cardSurface)
                         .cornerRadius(12)
                         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
                     }
                     
-                    // Action buttons
-                    VStack(spacing: 12) {
-                        Button {
-                            // Save photo logic
-                            viewModel.reset()
-                        } label: {
-                            HStack {
+                    // Action button
+                    Button {
+                        viewModel.saveToPhotoLibrary()
+                    } label: {
+                        HStack {
+                            if viewModel.saveSuccess {
+                                Image(systemName: "checkmark.circle.fill")
+                                Text("Saved!")
+                                    .font(.custom("Inter", size: 16))
+                                    .fontWeight(.semibold)
+                            } else {
                                 Image(systemName: "square.and.arrow.down.fill")
                                 Text("Save to Gallery")
                                     .font(.custom("Inter", size: 16))
                                     .fontWeight(.semibold)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(red: 1.0, green: 0.45, blue: 0.2))
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
                         }
-                        
-                        Button {
-                            viewModel.reset()
-                        } label: {
-                            HStack {
-                                Image(systemName: "camera.fill")
-                                Text("Take Another Photo")
-                                    .font(.custom("Inter", size: 16))
-                                    .fontWeight(.medium)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(red: 0.97, green: 0.97, blue: 0.98))
-                            .foregroundColor(.textColor)
-                            .cornerRadius(12)
-                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(viewModel.saveSuccess ? Color.green : Color(red: 1.0, green: 0.45, blue: 0.2))
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                    }
+                    .disabled(viewModel.saveSuccess)
+                    
+                    // Error message if save failed
+                    if let error = viewModel.saveError {
+                        Text(error)
+                            .font(.custom("Inter", size: 14))
+                            .foregroundColor(.red)
+                            .padding(.top, 8)
                     }
                 }
                 .padding(20)
@@ -224,7 +221,7 @@ struct PhotoResultView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .ignoresSafeArea(edges: .top)
-        .background(Color.white)
+        .background(Color.appBackground)
     }
 }
 

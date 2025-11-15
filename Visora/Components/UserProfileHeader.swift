@@ -46,7 +46,7 @@ struct UserProfileHeader: View {
                 Text(userName)
                     .font(Font.custom("SF Pro", size: 14))
                     .lineSpacing(16)
-                    .foregroundColor(Color(red: 0.11, green: 0.12, blue: 0.16))
+                    .foregroundColor(.textColor)
                     .offset(x: -89, y: 0)
                 
                 // Notification bell background
@@ -64,7 +64,7 @@ struct UserProfileHeader: View {
                     ZStack {
                         Image(systemName: "bell")
                             .font(.system(size: 20))
-                            .foregroundColor(Color(red: 0.11, green: 0.12, blue: 0.16))
+                            .foregroundColor(.textColor)
                         
                         if hasNotification {
                             Circle()

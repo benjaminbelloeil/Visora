@@ -18,7 +18,7 @@ struct PhotoCaptureView: View {
         NavigationStack {
             ZStack {
                 // Background color matching other tabs
-                Color.white
+                Color.appBackground
                     .ignoresSafeArea()
                 
                 if viewModel.isProcessing {
@@ -188,15 +188,18 @@ struct PhotoCaptureView: View {
                                     HStack(spacing: 12) {
                                         Image(systemName: "camera.fill")
                                             .font(.title3)
+                                            .foregroundColor(.white)
                                         Text("Take Photo")
                                             .font(.headline)
                                             .fontWeight(.semibold)
+                                            .foregroundColor(.white)
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 16)
-                                    .background(Color.actionColor)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color.actionColor)
+                                    )
                                     .shadow(color: Color.actionColor.opacity(0.4), radius: 15, x: 0, y: 8)
                                 }
                                 
@@ -211,7 +214,7 @@ struct PhotoCaptureView: View {
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 16)
-                                    .background(Color.white)
+                                    .background(Color.cardSurface)
                                     .foregroundColor(.actionColor)
                                     .cornerRadius(16)
                                     .overlay(
@@ -290,7 +293,7 @@ struct FeatureCard: View {
             Spacer()
         }
         .padding(16)
-        .background(Color.white)
+        .background(Color.cardSurface)
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
@@ -327,7 +330,7 @@ struct CompactFeatureCard: View {
             Spacer()
         }
         .padding(12)
-        .background(Color.white)
+        .background(Color.cardSurface)
         .cornerRadius(10)
         .shadow(color: Color.black.opacity(0.05), radius: 6, x: 0, y: 3)
     }

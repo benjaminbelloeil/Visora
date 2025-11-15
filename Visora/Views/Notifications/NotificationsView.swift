@@ -105,7 +105,7 @@ struct NotificationCard: View {
             Spacer()
         }
         .padding()
-        .background(Color.white)
+        .background(Color.cardSurface)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
