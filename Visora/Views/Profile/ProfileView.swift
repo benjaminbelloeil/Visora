@@ -18,35 +18,52 @@ struct ProfileView: View {
             VStack(spacing: 0) {
                 // Header with Profile Title and Edit Button
                 HStack {
-                    Text("Profile")
-                        .font(.title)
-                        .fontWeight(.bold)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Profile")
+                            .font(.system(size: 34, weight: .bold))
+                            .foregroundColor(.textColor)
+                        
+                        // Decorative underline
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.actionColor, Color.actionColor.opacity(0.4)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(width: 80, height: 4)
+                            .cornerRadius(2)
+                    }
                     
                     Spacer()
                     
                     Button {
                         showQuickEdit = true
                     } label: {
-                        Image(systemName: "pencil")
-                            .foregroundColor(.actionColor)
-                            .font(.title3)
+                        Circle()
+                            .fill(Color.actionColor)
+                            .frame(width: 44, height: 44)
+                            .overlay(
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.white)
+                            )
                     }
                     .accessibilityLabel("Quick Edit")
                     .accessibilityHint("Opens quick edit for basic profile info")
                 }
-                .padding(.horizontal)
-                .padding(.top, 8)
-                .padding(.bottom, 16)
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
                 
-                ScrollView {
-                    VStack(spacing: 24) {
+                VStack(spacing: 24) {
                         // Profile Header
                         VStack(spacing: 12) {
                             // Profile Image
                             Circle()
                                 .fill(
                                     LinearGradient(
-                                        colors: [Color.orange, Color.blue],
+                                        colors: [Color.actionColor, Color.actionColor.opacity(0.7)],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -77,30 +94,48 @@ struct ProfileView: View {
                                 .font(.subheadline)
                                 .foregroundColor(.subTextColor)
                         }
-                        .padding(.top, 8)
+                        .padding(.top, 4)
                         
                         // Stats Section
-                        HStack(spacing: 40) {
+                        HStack(spacing: 0) {
                             StatView(
                                 title: "Monuments",
                                 value: "\(viewModel.userProfile.monumentsCount)"
                             )
+                            .frame(maxWidth: .infinity)
+                            
+                            // Separator
+                            Rectangle()
+                                .fill(Color.secondary.opacity(0.3))
+                                .frame(width: 1, height: 40)
                             
                             StatView(
                                 title: "Countries",
                                 value: "\(viewModel.userProfile.countriesCount)"
                             )
+                            .frame(maxWidth: .infinity)
+                            
+                            // Separator
+                            Rectangle()
+                                .fill(Color.secondary.opacity(0.3))
+                                .frame(width: 1, height: 40)
                             
                             StatView(
                                 title: "Favorites",
                                 value: "\(viewModel.userProfile.favoritesCount)"
                             )
+                            .frame(maxWidth: .infinity)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 20)
+                        .padding(.vertical, 16)
                         .padding(.horizontal)
-                        .background(Color(UIColor.secondarySystemBackground))
+                        .background(Color.cardSurface)
                         .cornerRadius(12)
+                        .shadow(
+                            color: Color.primary.opacity(0.08),
+                            radius: 12,
+                            x: 0,
+                            y: 4
+                        )
                         .padding(.horizontal)
                         
                         // Menu Items
@@ -142,26 +177,23 @@ struct ProfileView: View {
                                 .padding(.leading, 60)
                             
                             ProfileMenuItem(
-                                icon: "questionmark.circle",
-                                title: "Help & Support",
-                                destination: AnyView(HelpSupportView())
-                            )
-                            
-                            Divider()
-                                .padding(.leading, 60)
-                            
-                            ProfileMenuItem(
                                 icon: "info.circle",
                                 title: "About Visora",
                                 destination: AnyView(AboutVisoraView())
                             )
                         }
-                        .background(Color(UIColor.secondarySystemBackground))
+                        .background(Color.cardSurface)
                         .cornerRadius(12)
+                        .shadow(
+                            color: Color.primary.opacity(0.08),
+                            radius: 12,
+                            x: 0,
+                            y: 4
+                        )
                         .padding(.horizontal)
-                    }
-                    .padding(.bottom, 20)
+                        .padding(.bottom, 70)
                 }
+                .padding(.top, 20)
             }
             .background(Color(UIColor.systemBackground))
             .offset(x: dragOffset)
@@ -197,6 +229,10 @@ struct ProfileView: View {
         .onAppear {
             viewModel.calculateStats()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .bookmarksDidChange)) { _ in
+            // Update favorites count when bookmarks change
+            viewModel.updateFavoritesCount()
+        }
     }
 }
 
@@ -231,7 +267,7 @@ struct ProfileMenuItem: View {
             HStack(spacing: 16) {
                 Image(systemName: icon)
                     .font(.title3)
-                    .foregroundColor(.subTextColor)
+                    .foregroundColor(.actionColor)
                     .frame(width: 24)
                 
                 Text(title)
@@ -246,7 +282,7 @@ struct ProfileMenuItem: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 16)
-            .background(Color(UIColor.secondarySystemBackground))
+            .background(Color.clear)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(title)

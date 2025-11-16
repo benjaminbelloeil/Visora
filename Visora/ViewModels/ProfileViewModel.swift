@@ -17,6 +17,24 @@ class ProfileViewModel: ObservableObject {
     init() {
         loadProfile()
         calculateStats()
+        
+        // Listen for bookmark changes to update favorites count
+        NotificationCenter.default.addObserver(
+            forName: .bookmarksDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateFavoritesCount()
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    func updateFavoritesCount() {
+        userProfile.favoritesCount = BookmarkManager.shared.getBookmarkCount()
+        saveProfile()
     }
     
     func loadProfile() {
@@ -60,9 +78,8 @@ class ProfileViewModel: ObservableObject {
         })
         userProfile.countriesCount = countries.count
         
-        // Favorites = only photos marked as favorite
-        let favorites = allPhotos.filter { $0.isFavorite }
-        userProfile.favoritesCount = favorites.count
+        // Favorites = bookmarked destinations count from iCloud
+        userProfile.favoritesCount = BookmarkManager.shared.getBookmarkCount()
         
         saveProfile()
     }

@@ -15,21 +15,11 @@ struct UserProfileHeader: View {
     let onProfileTap: () -> Void
     
     var body: some View {
-        ZStack {
-            Group {
-                // Background pill for name - tappable
-                Button(action: onProfileTap) {
-                    Rectangle()
-                        .foregroundColor(.clear)
-                        .frame(width: 130, height: 50)
-                        .background(Color.cardBackground)
-                        .cornerRadius(25)
-                }
-                .buttonStyle(.plain)
-                .offset(x: -115, y: 0)
-                
-                // Profile picture - circle - also tappable
-                Button(action: onProfileTap) {
+        HStack(spacing: 0) {
+            // Profile picture and name pill
+            Button(action: onProfileTap) {
+                HStack(spacing: 8) {
+                    // Profile picture circle
                     Circle()
                         .fill(
                             LinearGradient(
@@ -51,53 +41,44 @@ struct UserProfileHeader: View {
                                     .font(.system(size: 20))
                             }
                         }
-                }
-                .buttonStyle(.plain)
-                .offset(x: -150, y: 0)
-            }
-            
-            Group {
-                // User name text - tappable
-                Button(action: onProfileTap) {
+                    
+                    // User name text
                     Text(userName)
-                        .font(Font.custom("SF Pro", size: 15))
-                        .fontWeight(.medium)
-                        .lineSpacing(16)
+                        .font(.system(size: 15, weight: .medium))
                         .foregroundColor(.textColor)
+                        .lineLimit(1)
+                        .padding(.trailing, 12)
                 }
-                .buttonStyle(.plain)
-                .offset(x: -95, y: 0)
-                
-                // Notification bell background
-                Circle()
-                    .foregroundColor(.clear)
-                    .frame(width: 50, height: 50)
-                    .background(
+                .padding(.leading, 4)
+                .padding(.vertical, 4)
+                .background(Color.cardBackground)
+                .cornerRadius(25)
+            }
+            .buttonStyle(.plain)
+            
+            Spacer()
+            
+            // Notification bell
+            Button(action: onNotificationTap) {
+                ZStack {
+                    Circle()
+                        .fill(Color.cardBackground)
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: "bell")
+                        .font(.system(size: 20))
+                        .foregroundColor(.textColor)
+                    
+                    if hasNotification {
                         Circle()
-                            .fill(Color.cardBackground)
-                    )
-                    .offset(x: 175, y: 0)
-                
-                // Bell icon
-                Button(action: onNotificationTap) {
-                    ZStack {
-                        Image(systemName: "bell.fill")
-                            .font(.system(size: 22))
-                            .foregroundColor(.textColor)
-                        
-                        if hasNotification {
-                            Circle()
-                                .fill(Color(red: 1.0, green: 0.45, blue: 0.2))
-                                .frame(width: 9, height: 9)
-                                .offset(x: 11, y: -9)
-                        }
+                            .fill(Color(red: 1.0, green: 0.45, blue: 0.2))
+                            .frame(width: 8, height: 8)
+                            .offset(x: 10, y: -8)
                     }
-                    .frame(width: 50, height: 50)
                 }
-                .offset(x: 175, y: 0)
             }
         }
-        .frame(width: 345, height: 50)
+        .frame(height: 50)
     }
 }
 

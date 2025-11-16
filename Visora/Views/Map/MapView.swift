@@ -56,16 +56,6 @@ struct MapView: View {
             }
             .navigationTitle("My Memories")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        viewModel.loadPhotoPins()
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .foregroundColor(.actionColor)
-                    }
-                }
-            }
             .onAppear {
                 viewModel.requestLocationPermission()
                 // Small delay to ensure CalendarViewModel has loaded

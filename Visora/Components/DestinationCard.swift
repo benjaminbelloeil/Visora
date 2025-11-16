@@ -85,7 +85,7 @@ struct DestinationCard: View {
                 }
             } label: {
                 Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                    .foregroundColor(.primary)
+                    .foregroundColor(.white)
                     .font(.system(size: 16, weight: .medium))
             }
             .buttonStyle(PlainButtonStyle())
@@ -226,27 +226,24 @@ struct DestinationCard: View {
         .onAppear {
             loadBookmarkState()
         }
-    }
-    
-    // Save bookmark state to UserDefaults
-    private func saveBookmarkState() {
-        var bookmarkedDestinations = UserDefaults.standard.stringArray(forKey: "BookmarkedDestinations") ?? []
-        
-        if isBookmarked {
-            if !bookmarkedDestinations.contains(destination.id) {
-                bookmarkedDestinations.append(destination.id)
-            }
-        } else {
-            bookmarkedDestinations.removeAll { $0 == destination.id }
+        .onReceive(NotificationCenter.default.publisher(for: .bookmarksDidChange)) { _ in
+            // Update bookmark state when changes happen from other sources
+            loadBookmarkState()
         }
-        
-        UserDefaults.standard.set(bookmarkedDestinations, forKey: "BookmarkedDestinations")
     }
     
-    // Load bookmark state from UserDefaults
+    // Save bookmark state to iCloud
+    private func saveBookmarkState() {
+        if isBookmarked {
+            BookmarkManager.shared.addBookmark(destination.id)
+        } else {
+            BookmarkManager.shared.removeBookmark(destination.id)
+        }
+    }
+    
+    // Load bookmark state from iCloud
     private func loadBookmarkState() {
-        let bookmarkedDestinations = UserDefaults.standard.stringArray(forKey: "BookmarkedDestinations") ?? []
-        isBookmarked = bookmarkedDestinations.contains(destination.id)
+        isBookmarked = BookmarkManager.shared.isBookmarked(destination.id)
     }
 }
 

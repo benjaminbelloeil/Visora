@@ -25,7 +25,6 @@ struct PhotoCaptureView: View {
                     // Beautiful AI Analysis Loading Screen with smooth animations
                     AILoadingView(isProcessing: viewModel.isProcessing)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .transition(.opacity.combined(with: .scale))
                     
                 } else if let photoEntry = viewModel.currentPhoto {
                     PhotoResultView(photoEntry: photoEntry)
@@ -136,6 +135,8 @@ struct PhotoCaptureView: View {
                     }
                 }
             }
+            .animation(.easeInOut(duration: 0.6), value: viewModel.isProcessing)
+            .animation(.easeInOut(duration: 0.6), value: viewModel.currentPhoto != nil)
             .fullScreenCover(isPresented: $showingCamera) {
                 ImagePicker(sourceType: .camera) { image in
                     Task {
@@ -427,10 +428,18 @@ struct AILoadingView: View {
     // MARK: - Progress Dots
     private var progressDots: some View {
         HStack(spacing: 12) {
-            ForEach(0..<3) { _ in
+            ForEach(0..<3) { index in
                 Circle()
                     .fill(Color.actionColor)
-                    .frame(width: 10, height: 10)
+                    .frame(width: 12, height: 12)
+                    .scaleEffect(pulseScale > 1.07 ? 1.0 : 0.5)
+                    .animation(
+                        Animation
+                            .easeInOut(duration: 0.6)
+                            .repeatForever()
+                            .delay(Double(index) * 0.2),
+                        value: pulseScale
+                    )
             }
         }
         .padding(.top, 10)

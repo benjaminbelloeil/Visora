@@ -96,6 +96,7 @@ struct Destination: Identifiable, Codable {
 extension Destination {
     static let sampleData: [Destination] = [
         Destination(
+            id: "eiffel-tower",
             name: "Eiffel Tower",
             description: "The Eiffel Tower stands as an iconic iron lattice tower and enduring symbol of Paris. Constructed in 1889 for the World's Fair, this architectural masterpiece rises 330 meters into the Parisian skyline. Visitors can ascend to three levels, with the top offering breathtaking panoramic views of the entire city. The tower sparkles with 20,000 golden lights every evening, creating a magical atmosphere. Whether you're enjoying a romantic dinner at the Jules Verne restaurant or simply admiring the structure from the Trocadéro Gardens, the Eiffel Tower remains one of the most photographed monuments in the world and a must-visit destination for anyone traveling to France.",
             imageName: "Destination1",
@@ -109,6 +110,7 @@ extension Destination {
             fact3: "Sparkles with 20,000 golden lights every evening"
         ),
         Destination(
+            id: "taj-mahal",
             name: "Taj Mahal",
             description: "The Taj Mahal is an ivory-white marble mausoleum and one of the most beautiful buildings in the world. Built by Mughal emperor Shah Jahan in memory of his beloved wife Mumtaz Mahal, this UNESCO World Heritage Site took 22 years to complete. The monument's stunning symmetry, intricate marble inlay work, and gorgeous gardens create an unforgettable sight. The white marble changes color throughout the day, appearing pink at sunrise, white during the day, and golden under moonlight. This eternal symbol of love attracts millions of visitors annually who come to witness its breathtaking beauty.",
             imageName: "Destination2",
@@ -122,6 +124,7 @@ extension Destination {
             fact3: "Made entirely of white marble with semi-precious stone inlays"
         ),
         Destination(
+            id: "colosseum",
             name: "Colosseum",
             description: "The Colosseum stands as the largest ancient amphitheater ever built and remains one of Rome's most iconic landmarks. Constructed between 70-80 AD, this architectural marvel could hold up to 80,000 spectators who gathered to witness gladiatorial contests, animal hunts, and dramatic reenactments. Walking through its ancient corridors, you can almost hear the roar of the crowds and feel the weight of history. The ingenious engineering, including underground tunnels and a sophisticated drainage system, showcases Roman innovation. Today, the Colosseum is a UNESCO World Heritage Site and one of the New Seven Wonders of the World, attracting millions of visitors who come to experience this testament to the grandeur of the Roman Empire.",
             imageName: "Destination3",
@@ -135,6 +138,7 @@ extension Destination {
             fact3: "UNESCO World Heritage Site and New Seven Wonders of the World"
         ),
         Destination(
+            id: "statue-of-liberty",
             name: "Statue of Liberty",
             description: "The Statue of Liberty stands as a powerful symbol of freedom and democracy, welcoming millions to New York Harbor since 1886. This colossal neoclassical sculpture was a gift from France to the United States, designed by French sculptor Frédéric Auguste Bartholdi. Standing 305 feet tall from ground to torch, Lady Liberty holds a torch above her head with her right hand and carries a tablet inscribed with the date of American independence in her left. Visitors can climb the 354 steps to the crown for spectacular views of New York City and the harbor. The statue represents opportunity, hope, and the enduring friendship between nations.",
             imageName: "Destination4",
@@ -148,6 +152,7 @@ extension Destination {
             fact3: "The crown has 25 windows symbolizing gemstones and heaven's rays"
         ),
         Destination(
+            id: "christ-the-redeemer",
             name: "Christ the Redeemer",
             description: "Christ the Redeemer is an iconic Art Deco statue of Jesus Christ overlooking Rio de Janeiro from atop Mount Corcovado. Standing 98 feet tall with arms stretched 92 feet wide, this magnificent monument has become a cultural icon of both Rio and Brazil. Constructed between 1922 and 1931, the statue is made of reinforced concrete and soapstone. The panoramic views from the base offer breathtaking vistas of the city, Sugarloaf Mountain, and Guanabara Bay. Voted one of the New Seven Wonders of the World, this masterpiece combines religious symbolism with stunning architectural achievement.",
             imageName: "Destination5",

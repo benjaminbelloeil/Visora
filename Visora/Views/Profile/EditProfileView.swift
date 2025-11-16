@@ -68,39 +68,101 @@ struct EditProfileView: View {
                     .padding(.top, 20)
                     
                     // Form Fields
-                    VStack(spacing: 20) {
-                        // First Name
-                        FormField(
-                            label: "First Name",
-                            text: $profile.firstName,
-                            hasCheckmark: !profile.firstName.isEmpty
-                        )
+                    VStack(spacing: 16) {
+                        // First Name Card
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("First Name")
+                                .font(.subheadline)
+                                .foregroundColor(.textColor)
+                                .padding(.horizontal, 4)
+                            
+                            HStack {
+                                TextField("Enter your first name", text: $profile.firstName)
+                                
+                                if !profile.firstName.isEmpty {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.actionColor)
+                                        .font(.caption)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color.cardSurface)
+                            .cornerRadius(12)
+                            .shadow(color: Color.primary.opacity(0.08), radius: 12, x: 0, y: 4)
+                        }
                         
-                        // Last Name
-                        FormField(
-                            label: "Last Name",
-                            text: $profile.lastName,
-                            hasCheckmark: !profile.lastName.isEmpty
-                        )
+                        // Last Name Card
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Last Name")
+                                .font(.subheadline)
+                                .foregroundColor(.textColor)
+                                .padding(.horizontal, 4)
+                            
+                            HStack {
+                                TextField("Enter your last name", text: $profile.lastName)
+                                
+                                if !profile.lastName.isEmpty {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.actionColor)
+                                        .font(.caption)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color.cardSurface)
+                            .cornerRadius(12)
+                            .shadow(color: Color.primary.opacity(0.08), radius: 12, x: 0, y: 4)
+                        }
                         
-                        // Email
-                        FormField(
-                            label: "Email",
-                            text: $profile.email,
-                            hasCheckmark: !profile.email.isEmpty
-                        )
+                        // Email Card
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Email")
+                                .font(.subheadline)
+                                .foregroundColor(.textColor)
+                                .padding(.horizontal, 4)
+                            
+                            HStack {
+                                TextField("Enter your email address", text: $profile.email)
+                                    .keyboardType(.emailAddress)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                
+                                if !profile.email.isEmpty {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.actionColor)
+                                        .font(.caption)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color.cardSurface)
+                            .cornerRadius(12)
+                            .shadow(color: Color.primary.opacity(0.08), radius: 12, x: 0, y: 4)
+                        }
                         
-                        // Location Picker
-                        LocationPicker(
-                            selectedLocation: $profile.location,
-                            hasCheckmark: !profile.location.isEmpty
-                        )
+                        // Location Card
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Location")
+                                .font(.subheadline)
+                                .foregroundColor(.textColor)
+                                .padding(.horizontal, 4)
+                            
+                            LocationPicker(
+                                selectedLocation: $profile.location,
+                                hasCheckmark: !profile.location.isEmpty
+                            )
+                            .background(Color.cardSurface)
+                            .cornerRadius(12)
+                            .shadow(color: Color.primary.opacity(0.08), radius: 12, x: 0, y: 4)
+                        }
                         
-                        // Mobile Number
+                        // Mobile Number Card
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Mobile Number")
                                 .font(.subheadline)
                                 .foregroundColor(.textColor)
+                                .padding(.horizontal, 4)
                             
                             HStack(spacing: 8) {
                                 // Country Code Picker
@@ -118,13 +180,13 @@ struct EditProfileView: View {
                                     .foregroundColor(.textColor)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 12)
-                                    .background(Color(UIColor.secondarySystemBackground))
+                                    .background(Color.cardSurface)
                                     .cornerRadius(8)
                                 }
                                 
                                 // Phone Number Field
                                 HStack {
-                                    TextField("", text: $profile.mobileNumber)
+                                    TextField("Enter your phone number", text: $profile.mobileNumber)
                                         .keyboardType(.phonePad)
                                     
                                     if !profile.mobileNumber.isEmpty {
@@ -135,9 +197,12 @@ struct EditProfileView: View {
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 12)
-                                .background(Color(UIColor.secondarySystemBackground))
+                                .background(Color.cardSurface)
                                 .cornerRadius(8)
                             }
+                            .background(Color.cardSurface)
+                            .cornerRadius(12)
+                            .shadow(color: Color.primary.opacity(0.08), radius: 12, x: 0, y: 4)
                         }
                     }
                     .padding(.horizontal)
@@ -146,6 +211,7 @@ struct EditProfileView: View {
             }
         }
         .navigationBarHidden(true)
+        .ignoresSafeArea(.keyboard) // Prevent keyboard from pushing background
         .onChange(of: selectedItem) { _, newValue in
             Task {
                 if let newValue = newValue,
@@ -163,7 +229,7 @@ struct EditProfileView: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        colors: [Color.orange, Color.blue],
+                        colors: [Color.actionColor, Color.actionColor.opacity(0.7)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -193,7 +259,9 @@ struct EditProfileView: View {
 struct FormField: View {
     let label: String
     @Binding var text: String
+    var placeholder: String = ""
     var hasCheckmark: Bool = false
+    var keyboardType: UIKeyboardType = .default
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -202,7 +270,8 @@ struct FormField: View {
                 .foregroundColor(.textColor)
             
             HStack {
-                TextField("", text: $text)
+                TextField(placeholder, text: $text)
+                    .keyboardType(keyboardType)
                 
                 if hasCheckmark {
                     Image(systemName: "checkmark")
@@ -212,7 +281,7 @@ struct FormField: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(UIColor.secondarySystemBackground))
+            .background(Color.cardSurface)
             .cornerRadius(8)
         }
     }

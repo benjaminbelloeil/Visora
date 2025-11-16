@@ -9,7 +9,7 @@ import SwiftUI
 import MapKit
 
 struct HomeView: View {
-    @StateObject private var viewModel = HomeViewModel()
+    @StateObject private var viewModel = HomeViewModel.shared
     @StateObject private var profileViewModel = ProfileViewModel()
     @State private var showNotifications = false
     @State private var showAllDestinations = false
@@ -25,9 +25,22 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 32) {
                     // User Profile Header - synced with profile
                     UserProfileHeader(
-                        userName: profileViewModel.userProfile.firstName.isEmpty 
-                            ? profileViewModel.userProfile.name 
-                            : profileViewModel.userProfile.firstName,
+                        userName: {
+                            let firstName = profileViewModel.userProfile.firstName
+                            let lastName = profileViewModel.userProfile.lastName
+                            
+                            if !firstName.isEmpty && !lastName.isEmpty {
+                                return "\(firstName) \(lastName)"
+                            } else if !firstName.isEmpty {
+                                return firstName
+                            } else if !lastName.isEmpty {
+                                return lastName
+                            } else if !profileViewModel.userProfile.name.isEmpty {
+                                return profileViewModel.userProfile.name
+                            } else {
+                                return "Guest"
+                            }
+                        }(),
                         profileImage: profileViewModel.userProfile.profileImage,
                         hasNotification: true,
                         onNotificationTap: {
@@ -175,7 +188,11 @@ struct HomeView: View {
             }
             .background(Color.appBackground)
             .onAppear {
-                viewModel.loadFeaturedDestinations()
+                // Only load if data hasn't been preloaded
+                if viewModel.featuredDestinations.isEmpty {
+                    viewModel.loadFeaturedDestinations()
+                }
+                profileViewModel.loadProfile() // Ensure profile is loaded
             }
             .sheet(isPresented: $showNotifications) {
                 NotificationsView()

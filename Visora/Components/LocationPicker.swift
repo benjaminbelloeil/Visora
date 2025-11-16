@@ -105,35 +105,29 @@ struct LocationPicker: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Location")
-                .font(.subheadline)
-                .foregroundColor(.textColor)
-            
-            Button {
-                showPicker = true
-            } label: {
-                HStack {
-                    Text(selectedLocation.isEmpty ? "Select Location" : selectedLocation)
-                        .foregroundColor(selectedLocation.isEmpty ? .subTextColor : .textColor)
-                    
-                    Spacer()
-                    
-                    if hasCheckmark && !selectedLocation.isEmpty {
-                        Image(systemName: "checkmark")
-                            .foregroundColor(.actionColor)
-                            .font(.caption)
-                    }
-                    
-                    Image(systemName: "chevron.down")
-                        .foregroundColor(.subTextColor)
+        Button {
+            showPicker = true
+        } label: {
+            HStack {
+                Text(selectedLocation.isEmpty ? "Select Location" : selectedLocation)
+                    .foregroundColor(selectedLocation.isEmpty ? .subTextColor : .textColor)
+                
+                Spacer()
+                
+                if hasCheckmark && !selectedLocation.isEmpty {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.actionColor)
                         .font(.caption)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(Color(UIColor.secondarySystemBackground))
-                .cornerRadius(8)
+                
+                Image(systemName: "chevron.down")
+                    .foregroundColor(.subTextColor)
+                    .font(.caption)
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color(UIColor.secondarySystemBackground))
+            .cornerRadius(8)
         }
         .sheet(isPresented: $showPicker) {
             NavigationStack {

@@ -130,16 +130,16 @@ struct UserPreferences: Codable {
 
 extension UserProfile {
     static let sampleProfile = UserProfile(
-        name: "Leonardo",
-        firstName: "Leonardo",
-        lastName: "Ahmed",
-        email: "leonardo@gmail.com",
-        location: "Sylhet Bangladesh",
-        mobileNumber: "01758-000666",
-        countryCode: "+88",
-        bio: "Passionate about discovering new places and cultures around the world.",
-        monumentsCount: 360,
-        countriesCount: 238,
-        favoritesCount: 473
+        name: "Traveler",
+        firstName: "Traveler",
+        lastName: "",
+        email: "traveler@example.com",
+        location: "New York, USA",
+        mobileNumber: "555-0123",
+        countryCode: "+1",
+        bio: "Travel enthusiast exploring the world's most beautiful destinations",
+        monumentsCount: 0,
+        countriesCount: 0,
+        favoritesCount: 0
     )
 }

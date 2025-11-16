@@ -108,6 +108,23 @@ struct SettingsView: View {
                 Text("Privacy & Security")
             }
             
+            // Support Section
+            Section {
+                NavigationLink {
+                    HelpSupportView()
+                } label: {
+                    HStack {
+                        Image(systemName: "questionmark.circle.fill")
+                            .foregroundColor(.actionColor)
+                            .frame(width: 24)
+                        Text("Help & Support")
+                            .foregroundColor(.textColor)
+                    }
+                }
+            } header: {
+                Text("Support")
+            }
+            
             // About Section
             Section {
                 NavigationLink {

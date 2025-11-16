@@ -23,7 +23,7 @@ struct CalendarView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 0) {
                             Text("Calendar")
-                                .font(.custom("Montserrat-Black", size: 36))
+                                .font(.system(size: 34, weight: .bold))
                                 .foregroundColor(.textColor)
                             
                             // Decorative underline
@@ -50,11 +50,12 @@ struct CalendarView: View {
                                 .overlay(
                                     ZStack {
                                         Image(systemName: "bell")
+                                            .font(.system(size: 20))
                                             .foregroundColor(.textColor)
                                         Circle()
-                                            .fill(Color.red)
+                                            .fill(Color(red: 1.0, green: 0.45, blue: 0.2))
                                             .frame(width: 8, height: 8)
-                                            .offset(x: 6, y: -6)
+                                            .offset(x: 9, y: -10)
                                     }
                                 )
                         }

@@ -66,12 +66,18 @@ struct PhotoResultView: View {
                         HStack {
                             Spacer()
                             Button(action: {
-                                viewModel.reset()
+                                withAnimation(.easeInOut(duration: 0.5)) {
+                                    viewModel.reset()
+                                }
                             }) {
                                 ZStack {
                                     Circle()
                                         .fill(Color.black.opacity(0.3))
                                         .frame(width: 40, height: 40)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                                        )
                                     
                                     Image(systemName: "xmark")
                                         .font(.system(size: 16, weight: .semibold))

@@ -14,6 +14,7 @@ struct QuickEditProfileView: View {
     @ObservedObject var viewModel: ProfileViewModel
     @State private var selectedItem: PhotosPickerItem?
     @State private var selectedImage: UIImage?
+    @State private var showFullEdit = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -68,33 +69,74 @@ struct QuickEditProfileView: View {
                     .padding(.top, 20)
                     
                     // Quick Edit Fields - Just the essentials
-                    VStack(spacing: 20) {
-                        // First Name
-                        FormField(
-                            label: "First Name",
-                            text: $profile.firstName,
-                            hasCheckmark: !profile.firstName.isEmpty
-                        )
+                    VStack(spacing: 16) {
+                        // First Name Card
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("First Name")
+                                .font(.subheadline)
+                                .foregroundColor(.textColor)
+                                .padding(.horizontal, 4)
+                            
+                            HStack {
+                                TextField("Enter your first name", text: $profile.firstName)
+                                
+                                if !profile.firstName.isEmpty {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.actionColor)
+                                        .font(.caption)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color.cardSurface)
+                            .cornerRadius(12)
+                            .shadow(color: Color.primary.opacity(0.08), radius: 12, x: 0, y: 4)
+                        }
                         
-                        // Last Name
-                        FormField(
-                            label: "Last Name",
-                            text: $profile.lastName,
-                            hasCheckmark: !profile.lastName.isEmpty
-                        )
+                        // Last Name Card
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Last Name")
+                                .font(.subheadline)
+                                .foregroundColor(.textColor)
+                                .padding(.horizontal, 4)
+                            
+                            HStack {
+                                TextField("Enter your last name", text: $profile.lastName)
+                                
+                                if !profile.lastName.isEmpty {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.actionColor)
+                                        .font(.caption)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color.cardSurface)
+                            .cornerRadius(12)
+                            .shadow(color: Color.primary.opacity(0.08), radius: 12, x: 0, y: 4)
+                        }
                         
-                        // Location Picker
-                        LocationPicker(
-                            selectedLocation: $profile.location,
-                            hasCheckmark: !profile.location.isEmpty
-                        )
+                        // Location Card
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Location")
+                                .font(.subheadline)
+                                .foregroundColor(.textColor)
+                                .padding(.horizontal, 4)
+                            
+                            LocationPicker(
+                                selectedLocation: $profile.location,
+                                hasCheckmark: !profile.location.isEmpty
+                            )
+                            .background(Color.cardSurface)
+                            .cornerRadius(12)
+                            .shadow(color: Color.primary.opacity(0.08), radius: 12, x: 0, y: 4)
+                        }
                     }
                     .padding(.horizontal)
                     
                     // Link to full profile
                     Button {
-                        dismiss()
-                        // Navigate to full EditProfileView will happen from ProfileView
+                        showFullEdit = true
                     } label: {
                         HStack {
                             Text("Edit More Details")
@@ -111,6 +153,11 @@ struct QuickEditProfileView: View {
             }
         }
         .navigationBarHidden(true)
+        .sheet(isPresented: $showFullEdit) {
+            NavigationStack {
+                EditProfileView(profile: profile, viewModel: viewModel)
+            }
+        }
         .onChange(of: selectedItem) { _, newValue in
             Task {
                 if let newValue = newValue,
@@ -128,7 +175,7 @@ struct QuickEditProfileView: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        colors: [Color.orange, Color.blue],
+                        colors: [Color.actionColor, Color.actionColor.opacity(0.7)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
