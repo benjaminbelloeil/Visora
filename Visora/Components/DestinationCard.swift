@@ -10,21 +10,33 @@ import SwiftUI
 struct DestinationCard: View {
     let destination: Destination
     @State private var isBookmarked = false
+    @State private var navigateToDetail = false
     
     var body: some View {
         ZStack {
-            // Main card background
-            Rectangle()
-                .foregroundColor(.clear)
-                .frame(width: 268, height: 384)
-                .background(Color.cardSurface)
-                .cornerRadius(24)
-                .shadow(
-                    color: Color.black.opacity(0.08),
-                    radius: 12,
-                    x: 0,
-                    y: 4
-                )
+            // Main card background - tappable for navigation
+            NavigationLink(destination: DestinationDetailView(destination: destination), isActive: $navigateToDetail) {
+                EmptyView()
+            }
+            .opacity(0)
+            
+            // Card content
+            ZStack {
+                // Main card background
+                Rectangle()
+                    .foregroundColor(.clear)
+                    .frame(width: 268, height: 384)
+                    .background(Color.cardSurface)
+                    .cornerRadius(24)
+                    .shadow(
+                        color: Color.primary.opacity(0.08),
+                        radius: 12,
+                        x: 0,
+                        y: 4
+                    )
+                    .onTapGesture {
+                        navigateToDetail = true
+                    }
             
             // Destination Image
             Image(destination.imageName)
@@ -34,27 +46,59 @@ struct DestinationCard: View {
                 .clipped()
                 .cornerRadius(20)
                 .offset(x: 0, y: -35)
+                .onTapGesture {
+                    navigateToDetail = true
+                }
+                .onTapGesture(count: 2) {
+                    // Double tap to bookmark
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isBookmarked.toggle()
+                        
+                        // Provide haptic feedback
+                        let generator = UINotificationFeedbackGenerator()
+                        generator.notificationOccurred(isBookmarked ? .success : .warning)
+                        
+                        // Save to UserDefaults
+                        saveBookmarkState()
+                    }
+                }
             
             // Bookmark button background
             Rectangle()
                 .foregroundColor(.clear)
-                .frame(width: 34, height: 34)
-                .background(Color.gray.opacity(0.6))
+                .frame(width: 44, height: 44)
+                .background(Color.primary.opacity(0.3))
                 .cornerRadius(20)
                 .offset(x: 89, y: -147)
             
-            // Bookmark icon
+            // Bookmark icon - completely independent with high priority gesture
             Button {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                     isBookmarked.toggle()
+                    
+                    // Provide haptic feedback
+                    let generator = UIImpactFeedbackGenerator(style: .medium)
+                    generator.impactOccurred()
+                    
+                    // Save to UserDefaults
+                    saveBookmarkState()
                 }
             } label: {
                 Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                     .font(.system(size: 16, weight: .medium))
             }
-            .frame(width: 34, height: 34)
+            .buttonStyle(PlainButtonStyle())
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
             .offset(x: 89, y: -147)
+            .zIndex(100)
+            .simultaneousGesture(
+                TapGesture()
+                    .onEnded { _ in
+                        // This prevents the tap from propagating
+                    }
+            )
             
             // Destination name
             HStack {
@@ -176,8 +220,33 @@ struct DestinationCard: View {
                     }
                 }
             }
+            }
         }
         .frame(width: 268, height: 384)
+        .onAppear {
+            loadBookmarkState()
+        }
+    }
+    
+    // Save bookmark state to UserDefaults
+    private func saveBookmarkState() {
+        var bookmarkedDestinations = UserDefaults.standard.stringArray(forKey: "BookmarkedDestinations") ?? []
+        
+        if isBookmarked {
+            if !bookmarkedDestinations.contains(destination.id) {
+                bookmarkedDestinations.append(destination.id)
+            }
+        } else {
+            bookmarkedDestinations.removeAll { $0 == destination.id }
+        }
+        
+        UserDefaults.standard.set(bookmarkedDestinations, forKey: "BookmarkedDestinations")
+    }
+    
+    // Load bookmark state from UserDefaults
+    private func loadBookmarkState() {
+        let bookmarkedDestinations = UserDefaults.standard.stringArray(forKey: "BookmarkedDestinations") ?? []
+        isBookmarked = bookmarkedDestinations.contains(destination.id)
     }
 }
 

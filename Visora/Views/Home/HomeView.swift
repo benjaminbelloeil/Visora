@@ -10,7 +10,9 @@ import MapKit
 
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
+    @StateObject private var profileViewModel = ProfileViewModel()
     @State private var showNotifications = false
+    @State private var showAllDestinations = false
     @Binding var selectedTab: Int
     
     init(selectedTab: Binding<Int> = .constant(0)) {
@@ -21,10 +23,20 @@ struct HomeView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 32) {
-                    // User Profile Header
-                    UserProfileHeader(userName: "Benjamin", hasNotification: true) {
-                        showNotifications = true
-                    }
+                    // User Profile Header - synced with profile
+                    UserProfileHeader(
+                        userName: profileViewModel.userProfile.firstName.isEmpty 
+                            ? profileViewModel.userProfile.name 
+                            : profileViewModel.userProfile.firstName,
+                        profileImage: profileViewModel.userProfile.profileImage,
+                        hasNotification: true,
+                        onNotificationTap: {
+                            showNotifications = true
+                        },
+                        onProfileTap: {
+                            selectedTab = 4 // Navigate to Profile tab
+                        }
+                    )
                     .padding(.horizontal, 13)
                     .padding(.top, -50)
                     
@@ -66,7 +78,7 @@ struct HomeView: View {
                             Spacer()
                             
                             Button {
-                                // View all action
+                                showAllDestinations = true
                             } label: {
                                 Text("View all")
                                     .font(.custom("Nunito Sans", size: 16))
@@ -80,10 +92,7 @@ struct HomeView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 20) {
                                 ForEach(viewModel.featuredDestinations) { destination in
-                                    NavigationLink(destination: DestinationDetailView(destination: destination)) {
-                                        DestinationCard(destination: destination)
-                                    }
-                                    .buttonStyle(.plain)
+                                    DestinationCard(destination: destination)
                                 }
                             }
                             .padding(.leading, 10)
@@ -172,6 +181,9 @@ struct HomeView: View {
                 NotificationsView()
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showAllDestinations) {
+                ViewAllDestinationsView()
             }
         }
     }

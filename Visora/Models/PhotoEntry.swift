@@ -22,6 +22,7 @@ struct PhotoEntry: Identifiable, Codable, Hashable {
     let fact3: String?
     let latitude: Double?
     let longitude: Double?
+    var isFavorite: Bool  // Changed to var so it can be toggled
     
     // This property won't be codable but will be used for display
     var image: UIImage?
@@ -54,7 +55,8 @@ struct PhotoEntry: Identifiable, Codable, Hashable {
         fact2: String? = nil,
         fact3: String? = nil,
         latitude: Double? = nil,
-        longitude: Double? = nil
+        longitude: Double? = nil,
+        isFavorite: Bool = false
     ) {
         self.id = id
         self.image = image
@@ -69,10 +71,11 @@ struct PhotoEntry: Identifiable, Codable, Hashable {
         self.fact3 = fact3
         self.latitude = latitude
         self.longitude = longitude
+        self.isFavorite = isFavorite
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, imageName, dateTaken, location, caption, locationName, aiDescription, fact1, fact2, fact3, latitude, longitude
+        case id, imageName, dateTaken, location, caption, locationName, aiDescription, fact1, fact2, fact3, latitude, longitude, isFavorite
     }
     
     // Custom decoding - image will be loaded separately from file system
@@ -90,6 +93,7 @@ struct PhotoEntry: Identifiable, Codable, Hashable {
         fact3 = try container.decodeIfPresent(String.self, forKey: .fact3)
         latitude = try container.decodeIfPresent(Double.self, forKey: .latitude)
         longitude = try container.decodeIfPresent(Double.self, forKey: .longitude)
+        isFavorite = try container.decodeIfPresent(Bool.self, forKey: .isFavorite) ?? false
         image = nil // Will be loaded separately
     }
     
@@ -108,6 +112,7 @@ struct PhotoEntry: Identifiable, Codable, Hashable {
         try container.encodeIfPresent(fact3, forKey: .fact3)
         try container.encodeIfPresent(latitude, forKey: .latitude)
         try container.encodeIfPresent(longitude, forKey: .longitude)
+        try container.encode(isFavorite, forKey: .isFavorite)
     }
 }
 

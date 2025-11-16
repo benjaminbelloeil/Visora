@@ -22,105 +22,10 @@ struct PhotoCaptureView: View {
                     .ignoresSafeArea()
                 
                 if viewModel.isProcessing {
-                    // Beautiful AI Analysis Loading Screen
-                    VStack(spacing: 30) {
-                        ZStack {
-                            // Outer rotating ring
-                            Circle()
-                                .trim(from: 0, to: 0.7)
-                                .stroke(
-                                    Color.actionColor.opacity(0.3),
-                                    style: StrokeStyle(lineWidth: 3, lineCap: .round)
-                                )
-                                .frame(width: 160, height: 160)
-                                .rotationEffect(.degrees(viewModel.isProcessing ? 360 : 0))
-                                .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: viewModel.isProcessing)
-                            
-                            // Pulsing circles
-                            Circle()
-                                .stroke(Color.actionColor.opacity(0.2), lineWidth: 3)
-                                .frame(width: 140, height: 140)
-                                .scaleEffect(viewModel.isProcessing ? 1.2 : 1.0)
-                                .opacity(viewModel.isProcessing ? 0.5 : 1.0)
-                                .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: viewModel.isProcessing)
-                            
-                            Circle()
-                                .stroke(Color.actionColor.opacity(0.3), lineWidth: 3)
-                                .frame(width: 110, height: 110)
-                                .scaleEffect(viewModel.isProcessing ? 1.0 : 1.2)
-                                .opacity(viewModel.isProcessing ? 1.0 : 0.5)
-                                .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: viewModel.isProcessing)
-                            
-                            // Sparkles around the brain
-                            ForEach(0..<8) { index in
-                                Image(systemName: "sparkle")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.actionColor.opacity(0.6))
-                                    .offset(y: -60)
-                                    .rotationEffect(.degrees(Double(index) * 45))
-                                    .scaleEffect(viewModel.isProcessing ? 1.0 : 0.5)
-                                    .opacity(viewModel.isProcessing ? 1.0 : 0.3)
-                                    .animation(
-                                        .easeInOut(duration: 1.0)
-                                            .repeatForever(autoreverses: true)
-                                            .delay(Double(index) * 0.125),
-                                        value: viewModel.isProcessing
-                                    )
-                            }
-                            
-                            // AI brain icon
-                            ZStack {
-                                Circle()
-                                    .fill(Color.actionColor)
-                                    .frame(width: 80, height: 80)
-                                    .shadow(color: Color.actionColor.opacity(0.3), radius: 10, x: 0, y: 5)
-                                    .scaleEffect(viewModel.isProcessing ? 1.05 : 1.0)
-                                    .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: viewModel.isProcessing)
-                                
-                                Image(systemName: "brain.head.profile")
-                                    .font(.system(size: 35))
-                                    .foregroundColor(.white)
-                                    .rotationEffect(.degrees(viewModel.isProcessing ? 360 : 0))
-                                    .animation(.linear(duration: 3).repeatForever(autoreverses: false), value: viewModel.isProcessing)
-                            }
-                        }
-                        .padding(.top, 50)
-                        
-                        VStack(spacing: 12) {
-                            Text("AI Analysis in Progress")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(.textColor)
-                                .opacity(viewModel.isProcessing ? 1.0 : 0.7)
-                                .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: viewModel.isProcessing)
-                            
-                            Text("Discovering the story behind your photo...")
-                                .font(.body)
-                                .foregroundColor(.subTextColor)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 40)
-                        }
-                        
-                        // Animated progress indicators
-                        HStack(spacing: 12) {
-                            ForEach(0..<3) { index in
-                                Circle()
-                                    .fill(Color.actionColor)
-                                    .frame(width: 10, height: 10)
-                                    .scaleEffect(viewModel.isProcessing ? 1.2 : 0.5)
-                                    .opacity(viewModel.isProcessing ? 1.0 : 0.3)
-                                    .animation(
-                                        .easeInOut(duration: 0.6)
-                                            .repeatForever()
-                                            .delay(Double(index) * 0.2),
-                                        value: viewModel.isProcessing
-                                    )
-                            }
-                        }
-                        .padding(.top, 20)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .transition(.opacity.combined(with: .scale))
+                    // Beautiful AI Analysis Loading Screen with smooth animations
+                    AILoadingView(isProcessing: viewModel.isProcessing)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .transition(.opacity.combined(with: .scale))
                     
                 } else if let photoEntry = viewModel.currentPhoto {
                     PhotoResultView(photoEntry: photoEntry)
@@ -333,6 +238,202 @@ struct CompactFeatureCard: View {
         .background(Color.cardSurface)
         .cornerRadius(10)
         .shadow(color: Color.black.opacity(0.05), radius: 6, x: 0, y: 3)
+    }
+}
+
+// AI Loading Animation View
+struct AILoadingView: View {
+    let isProcessing: Bool
+    @State private var rotationDegrees: Double = 0
+    @State private var outerRotation: Double = 0
+    @State private var pulseScale: CGFloat = 1.0
+    @State private var sparkleRotation: Double = 0
+    @State private var waveOffset: CGFloat = 0
+    
+    var body: some View {
+        VStack(spacing: 40) {
+            // Animation container
+            animatedRings
+            
+            // Text content
+            textContent
+            
+            // Progress dots
+            progressDots
+        }
+    }
+    
+    // MARK: - Animated Rings
+    private var animatedRings: some View {
+        ZStack {
+            outerRing
+            middleRing
+            innerRing
+            sparkles
+            brainIcon
+        }
+        .padding(.top, 50)
+    }
+    
+    private var outerRing: some View {
+        Circle()
+            .trim(from: 0, to: 0.7)
+            .stroke(
+                LinearGradient(
+                    colors: [Color.actionColor, Color.actionColor.opacity(0.3)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                ),
+                style: StrokeStyle(lineWidth: 4, lineCap: .round)
+            )
+            .frame(width: 180, height: 180)
+            .rotationEffect(.degrees(outerRotation))
+            .onAppear {
+                withAnimation(.linear(duration: 2).repeatForever(autoreverses: false)) {
+                    outerRotation = 360
+                }
+            }
+    }
+    
+    private var middleRing: some View {
+        Circle()
+            .stroke(Color.actionColor.opacity(0.3), lineWidth: 3)
+            .frame(width: 150, height: 150)
+            .scaleEffect(pulseScale)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                    pulseScale = 1.15
+                }
+            }
+    }
+    
+    private var innerRing: some View {
+        Circle()
+            .trim(from: 0, to: 0.5)
+            .stroke(
+                Color.actionColor.opacity(0.4),
+                style: StrokeStyle(lineWidth: 3, lineCap: .round)
+            )
+            .frame(width: 120, height: 120)
+            .rotationEffect(.degrees(-rotationDegrees))
+            .onAppear {
+                withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
+                    rotationDegrees = 360
+                }
+            }
+    }
+    
+    private var sparkles: some View {
+        ForEach(0..<8) { index in
+            sparkleView(at: index)
+        }
+    }
+    
+    private func sparkleView(at index: Int) -> some View {
+        let angle = sparkleRotation + Double(index) * 45
+        let phase = angle * .pi / 180 + Double(index) * .pi / 4
+        let opacity = 0.6 + sin(phase) * 0.4
+        let scale = 0.8 + sin(phase) * 0.3
+        
+        return Image(systemName: "sparkle")
+            .font(.system(size: 14, weight: .bold))
+            .foregroundColor(.actionColor)
+            .offset(y: -70)
+            .rotationEffect(.degrees(angle))
+            .opacity(opacity)
+            .scaleEffect(scale)
+            .onAppear {
+                if index == 0 {
+                    withAnimation(.linear(duration: 4).repeatForever(autoreverses: false)) {
+                        sparkleRotation = 360
+                    }
+                }
+            }
+    }
+    
+    private var brainIcon: some View {
+        ZStack {
+            glowEffect
+            mainCircle
+            brain
+        }
+    }
+    
+    private var glowEffect: some View {
+        Circle()
+            .fill(
+                RadialGradient(
+                    colors: [Color.actionColor.opacity(0.4), Color.clear],
+                    center: .center,
+                    startRadius: 20,
+                    endRadius: 60
+                )
+            )
+            .frame(width: 120, height: 120)
+            .scaleEffect(pulseScale)
+    }
+    
+    private var mainCircle: some View {
+        Circle()
+            .fill(
+                LinearGradient(
+                    colors: [Color.actionColor, Color.actionColor.opacity(0.8)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: 90, height: 90)
+            .shadow(color: Color.actionColor.opacity(0.5), radius: 15, x: 0, y: 5)
+    }
+    
+    private var brain: some View {
+        Image(systemName: "brain.head.profile")
+            .font(.system(size: 40, weight: .medium))
+            .foregroundColor(.white)
+            .rotationEffect(.degrees(rotationDegrees * 0.3))
+    }
+    
+    // MARK: - Text Content
+    private var textContent: some View {
+        VStack(spacing: 16) {
+            titleText
+            descriptionText
+        }
+    }
+    
+    private var titleText: some View {
+        Text("AI Analysis in Progress")
+            .font(.system(size: 26, weight: .bold))
+            .foregroundColor(.textColor)
+            .scaleEffect(pulseScale > 1.07 ? 1.02 : 1.0)
+    }
+    
+    private var descriptionText: some View {
+        let textOpacity = 0.7 + sin(waveOffset) * 0.3
+        
+        return Text("Discovering the story behind your photo...")
+            .font(.body)
+            .foregroundColor(.subTextColor)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 40)
+            .opacity(textOpacity)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                    waveOffset = .pi * 2
+                }
+            }
+    }
+    
+    // MARK: - Progress Dots
+    private var progressDots: some View {
+        HStack(spacing: 12) {
+            ForEach(0..<3) { _ in
+                Circle()
+                    .fill(Color.actionColor)
+                    .frame(width: 10, height: 10)
+            }
+        }
+        .padding(.top, 10)
     }
 }
 

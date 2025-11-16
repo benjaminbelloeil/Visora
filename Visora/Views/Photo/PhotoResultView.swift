@@ -19,12 +19,13 @@ struct PhotoResultView: View {
                     GeometryReader { geometry in
                         let offset = geometry.frame(in: .global).minY
                         let imageHeight = 400 + max(offset, 0)
+                        let screenWidth = geometry.size.width
                         
                         if let image = photoEntry.image {
                             Image(uiImage: image)
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
-                                .frame(width: UIScreen.main.bounds.width, height: imageHeight)
+                                .frame(width: screenWidth, height: imageHeight)
                                 .frame(height: 400, alignment: .bottom)
                         }
                     }

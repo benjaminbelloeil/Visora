@@ -106,7 +106,7 @@ class CalendarViewModel: ObservableObject {
         var updatedPhotos: [PhotoEntry] = []
         var updateCount = 0
         
-        for (date, photos) in photosByDate {
+        for (_, photos) in photosByDate {
             for photo in photos {
                 if photo.latitude == nil || photo.longitude == nil {
                     // Reverse geocode to get location name
@@ -176,7 +176,7 @@ class CalendarViewModel: ObservableObject {
         var updatedPhotos: [PhotoEntry] = []
         var updateCount = 0
         
-        for (date, photos) in photosByDate {
+        for (_, photos) in photosByDate {
             for photo in photos {
                 // Try to get GPS from geocoding the location name or location string
                 if let locationName = photo.locationName, !locationName.isEmpty {
@@ -292,6 +292,24 @@ class CalendarViewModel: ObservableObject {
         
         // Update UserDefaults
         persistPhotos()
+    }
+    
+    func toggleFavorite(for photo: PhotoEntry) {
+        // Find and update the photo
+        for (date, photos) in photosByDate {
+            if let index = photos.firstIndex(where: { $0.id == photo.id }) {
+                var updatedPhoto = photos[index]
+                updatedPhoto.isFavorite.toggle()
+                photosByDate[date]?[index] = updatedPhoto
+                persistPhotos()
+                
+                // Provide haptic feedback
+                let generator = UIImpactFeedbackGenerator(style: .medium)
+                generator.impactOccurred()
+                
+                return
+            }
+        }
     }
 }
 

@@ -1,14 +1,14 @@
 //
-//  EditProfileView.swift
+//  QuickEditProfileView.swift
 //  Visora
 //
-//  Created on November 9, 2025.
+//  Created on November 16, 2025.
 //
 
 import SwiftUI
 import PhotosUI
 
-struct EditProfileView: View {
+struct QuickEditProfileView: View {
     @Environment(\.dismiss) var dismiss
     @State var profile: UserProfile
     @ObservedObject var viewModel: ProfileViewModel
@@ -19,10 +19,10 @@ struct EditProfileView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Button("") {
+                Button("Cancel") {
                     dismiss()
                 }
-                .opacity(0) // Hidden but maintains spacing
+                .foregroundColor(.actionColor)
                 
                 Spacer()
                 
@@ -67,7 +67,7 @@ struct EditProfileView: View {
                     }
                     .padding(.top, 20)
                     
-                    // Form Fields
+                    // Quick Edit Fields - Just the essentials
                     VStack(spacing: 20) {
                         // First Name
                         FormField(
@@ -83,64 +83,29 @@ struct EditProfileView: View {
                             hasCheckmark: !profile.lastName.isEmpty
                         )
                         
-                        // Email
-                        FormField(
-                            label: "Email",
-                            text: $profile.email,
-                            hasCheckmark: !profile.email.isEmpty
-                        )
-                        
                         // Location Picker
                         LocationPicker(
                             selectedLocation: $profile.location,
                             hasCheckmark: !profile.location.isEmpty
                         )
-                        
-                        // Mobile Number
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Mobile Number")
-                                .font(.subheadline)
-                                .foregroundColor(.textColor)
-                            
-                            HStack(spacing: 8) {
-                                // Country Code Picker
-                                Menu {
-                                    Button("+1") { profile.countryCode = "+1" }
-                                    Button("+44") { profile.countryCode = "+44" }
-                                    Button("+88") { profile.countryCode = "+88" }
-                                    Button("+91") { profile.countryCode = "+91" }
-                                } label: {
-                                    HStack {
-                                        Text(profile.countryCode)
-                                        Image(systemName: "chevron.down")
-                                            .font(.caption)
-                                    }
-                                    .foregroundColor(.textColor)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 12)
-                                    .background(Color(UIColor.secondarySystemBackground))
-                                    .cornerRadius(8)
-                                }
-                                
-                                // Phone Number Field
-                                HStack {
-                                    TextField("", text: $profile.mobileNumber)
-                                        .keyboardType(.phonePad)
-                                    
-                                    if !profile.mobileNumber.isEmpty {
-                                        Image(systemName: "checkmark")
-                                            .foregroundColor(.actionColor)
-                                            .font(.caption)
-                                    }
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 12)
-                                .background(Color(UIColor.secondarySystemBackground))
-                                .cornerRadius(8)
-                            }
-                        }
                     }
                     .padding(.horizontal)
+                    
+                    // Link to full profile
+                    Button {
+                        dismiss()
+                        // Navigate to full EditProfileView will happen from ProfileView
+                    } label: {
+                        HStack {
+                            Text("Edit More Details")
+                                .font(.subheadline)
+                                .foregroundColor(.actionColor)
+                            Image(systemName: "arrow.right")
+                                .font(.caption)
+                                .foregroundColor(.actionColor)
+                        }
+                        .padding()
+                    }
                     .padding(.bottom, 20)
                 }
             }
@@ -190,36 +155,6 @@ struct EditProfileView: View {
     }
 }
 
-struct FormField: View {
-    let label: String
-    @Binding var text: String
-    var hasCheckmark: Bool = false
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(label)
-                .font(.subheadline)
-                .foregroundColor(.textColor)
-            
-            HStack {
-                TextField("", text: $text)
-                
-                if hasCheckmark {
-                    Image(systemName: "checkmark")
-                        .foregroundColor(.actionColor)
-                        .font(.caption)
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color(UIColor.secondarySystemBackground))
-            .cornerRadius(8)
-        }
-    }
-}
-
 #Preview {
-    NavigationStack {
-        EditProfileView(profile: UserProfile.sampleProfile, viewModel: ProfileViewModel())
-    }
+    QuickEditProfileView(profile: UserProfile.sampleProfile, viewModel: ProfileViewModel())
 }

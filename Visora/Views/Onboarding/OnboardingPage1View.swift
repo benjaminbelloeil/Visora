@@ -9,14 +9,15 @@ import SwiftUI
 
 struct OnboardingPage1View: View {
     var body: some View {
-        VStack(spacing: 0) {
-            // Image at the top - extends to top edge
-            Image("Onboarding1")
-                .resizable()
-                .scaledToFill()
-                .frame(maxWidth: .infinity)
-                .frame(height: UIScreen.main.bounds.height * 0.54)
-                .clipShape(BottomRoundedRectangle(radius: 24))
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                // Image at the top - extends to top edge
+                Image("Onboarding1")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: geometry.size.height * 0.54)
+                    .clipShape(BottomRoundedRectangle(radius: 24))
             
             // Text content
             VStack(spacing: 24) {
@@ -53,9 +54,10 @@ struct OnboardingPage1View: View {
             .padding(.horizontal, 30)
             
             Spacer()
+            }
+            .background(Color.appBackground)
+            .ignoresSafeArea(edges: .top)
         }
-        .background(Color.appBackground)
-        .ignoresSafeArea(edges: .top)
     }
 }
 

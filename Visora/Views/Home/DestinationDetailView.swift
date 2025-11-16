@@ -20,11 +20,12 @@ struct DestinationDetailView: View {
                     GeometryReader { geometry in
                         let offset = geometry.frame(in: .global).minY
                         let imageHeight = 400 + max(offset, 0)
+                        let screenWidth = geometry.size.width
                         
                         Image(destination.imageName)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: UIScreen.main.bounds.width, height: imageHeight)
+                            .frame(width: screenWidth, height: imageHeight)
                             .frame(height: 400, alignment: .bottom)
                     }
                     .frame(height: 400)
@@ -32,7 +33,7 @@ struct DestinationDetailView: View {
                     
                     // Full-width gradient overlay
                     LinearGradient(
-                        colors: [Color.black.opacity(0), Color.black.opacity(0.6)],
+                        colors: [Color.primary.opacity(0), Color.primary.opacity(0.7)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
