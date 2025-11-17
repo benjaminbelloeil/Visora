@@ -17,7 +17,6 @@ struct LoadingView: View {
             LinearGradient(
                 colors: [
                     Color.appBackground,
-                    Color.actionColor.opacity(0.1),
                     Color.appBackground
                 ],
                 startPoint: .topLeading,

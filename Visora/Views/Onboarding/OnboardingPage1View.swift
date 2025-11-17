@@ -38,7 +38,7 @@ struct OnboardingPage1View: View {
                             
                             CurvedUnderline()
                                 .fill(Color.actionColor)
-                                .frame(width: 130, height: 8)
+                                .frame(width: 115, height: 8)
                                 .offset(y: 19)
                         }
                     }
