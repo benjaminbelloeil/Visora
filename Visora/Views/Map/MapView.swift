@@ -97,7 +97,7 @@ struct MapPinAnnotation: View {
             Image(systemName: "arrowtriangle.down.fill")
                 .font(.system(size: 10))
                 .foregroundColor(.actionColor)
-                .offset(y: -4)
+                .offset(y: -8)
         }
     }
 }

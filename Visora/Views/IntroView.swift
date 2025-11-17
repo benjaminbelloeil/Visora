@@ -18,7 +18,7 @@ struct IntroView: View {
             LinearGradient(
                 colors: [
                     Color.appBackground,
-                    Color.actionColor.opacity(0.15),
+                    Color.actionColor.opacity(0.10),
                     Color.appBackground
                 ],
                 startPoint: .topLeading,
@@ -31,51 +31,12 @@ struct IntroView: View {
                 
                 // App Icon with elegant animations
                 ZStack {
-                    // Outer pulsing glow
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color.actionColor.opacity(0.4),
-                                    Color.actionColor.opacity(0.2),
-                                    Color.actionColor.opacity(0.05),
-                                    Color.clear
-                                ],
-                                center: .center,
-                                startRadius: 80,
-                                endRadius: 200
-                            )
-                        )
-                        .frame(width: 400, height: 400)
-                        .scaleEffect(isAnimating ? 1.3 : 0.9)
-                        .opacity(isAnimating ? 0.4 : 0.8)
-                    
-                    // Middle glow ring
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color.actionColor.opacity(0.3),
-                                    Color.actionColor.opacity(0.1),
-                                    Color.clear
-                                ],
-                                center: .center,
-                                startRadius: 100,
-                                endRadius: 180
-                            )
-                        )
-                        .frame(width: 360, height: 360)
-                        .scaleEffect(isAnimating ? 1.2 : 0.8)
-                        .opacity(isAnimating ? 0.5 : 1)
-                    
                     // App Icon
                     Image("AppIcon")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 200, height: 200)
+                        .frame(width: 400, height: 400)
                         .cornerRadius(45)
-                        .shadow(color: Color.actionColor.opacity(0.4), radius: 30, x: 0, y: 15)
-                        .scaleEffect(isAnimating ? 1.05 : 0.95)
                 }
                 .opacity(opacity)
                 
@@ -103,9 +64,8 @@ struct IntroView: View {
                             .font(.system(size: 18, weight: .medium))
                             .foregroundColor(.subTextColor)
                             .transition(.opacity)
-                    }
+                    }.padding(.top, -40)
                 }
-                
                 Spacer()
             }
         }

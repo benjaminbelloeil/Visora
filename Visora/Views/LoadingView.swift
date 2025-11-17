@@ -31,31 +31,14 @@ struct LoadingView: View {
                 // App Icon with animation
                 ZStack {
                     // Outer glow circle
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color.actionColor.opacity(0.3),
-                                    Color.actionColor.opacity(0.1),
-                                    Color.clear
-                                ],
-                                center: .center,
-                                startRadius: 100,
-                                endRadius: 180
-                            )
-                        )
-                        .frame(width: 360, height: 360)
-                        .scaleEffect(isAnimating ? 1.2 : 0.8)
-                        .opacity(isAnimating ? 0.5 : 1)
                     
                     // App Icon
                     Image("AppIcon")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 200, height: 200)
+                        .frame(width: 400, height: 400)
                         .cornerRadius(45) // iOS app icon corner radius scaled up
-                        .shadow(color: Color.actionColor.opacity(0.3), radius: 20, x: 0, y: 10)
-                        .scaleEffect(isAnimating ? 1.05 : 1.0)
+                        .padding(.top, 100)
                 }
                 
                 // App Name
@@ -70,14 +53,8 @@ struct LoadingView: View {
                     )
                     .opacity(opacity)
                 
-                // Tagline
-                Text("Explore the Beautiful World")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.subTextColor)
-                    .opacity(opacity)
-                
                 Spacer()
-                
+            
                 // Loading indicator
                 VStack(spacing: 16) {
                     // Custom animated dots

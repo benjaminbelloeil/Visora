@@ -33,7 +33,7 @@ struct DestinationDetailView: View {
                     
                     // Full-width gradient overlay
                     LinearGradient(
-                        colors: [Color.primary.opacity(0), Color.primary.opacity(0.7)],
+                        colors: [Color.primary.opacity(0), Color.primary.opacity(0.4)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
