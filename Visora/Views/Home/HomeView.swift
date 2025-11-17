@@ -184,7 +184,9 @@ struct HomeView: View {
                     }
                 }
                 .padding(.vertical, -39)
+                .padding(.bottom, 150) // Add padding to allow content to scroll under navbar
             }
+            .ignoresSafeArea(edges: .bottom) // Allow content to extend under the navbar
             .background(Color.appBackground)
             .onAppear {
                 // Only load if data hasn't been preloaded
