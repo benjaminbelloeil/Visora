@@ -10,10 +10,15 @@ import SwiftUI
 struct CalendarView: View {
     @ObservedObject var viewModel = CalendarViewModel.shared
     @State private var selectedDate = Date()
+    @State private var currentMonth = Date()
     @State private var showNotifications = false
     @State private var showAllPhotos = false
+    @State private var showFullCalendar = false
+    @State private var showYearPicker = false
     
     private let weekDays = ["S", "M", "T", "W", "T", "F", "S"]
+    private let weekDaysFull = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
     
     var body: some View {
         NavigationStack {
@@ -63,89 +68,330 @@ struct CalendarView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
                     
-                    // Calendar Week View
-                    ZStack {
-                        // Background card
-                        Rectangle()
-                            .foregroundColor(.clear)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 148)
-                            .background(Color.cardSurface)
-                            .cornerRadius(24)
-                            .shadow(
-                                color: Color.black.opacity(0.08),
-                                radius: 12,
-                                x: 0,
-                                y: 4
-                            )
-                        
-                        // Date title
-                        Text(monthYearString(from: selectedDate))
-                            .font(Font.custom("Inter", size: 20).weight(.semibold))
-                            .lineSpacing(28)
-                            .foregroundColor(.textColor)
-                            .offset(x: -97, y: -44)
-                        
-                        // Navigation arrows
-                        HStack(spacing: 16) {
-                            Button(action: {
-                                selectedDate = Calendar.current.date(byAdding: .day, value: -7, to: selectedDate) ?? selectedDate
-                            }) {
-                                Image(systemName: "chevron.left")
-                                    .foregroundColor(.actionColor)
-                                    .frame(width: 24, height: 24)
-                            }
-                            
-                            Button(action: {
-                                selectedDate = Calendar.current.date(byAdding: .day, value: 7, to: selectedDate) ?? selectedDate
-                            }) {
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.actionColor)
-                                    .frame(width: 24, height: 24)
-                            }
-                        }
-                        .offset(x: 120, y: -44)
-                        
-                        // Week days and dates
-                        let dates = weekDates()
-                        ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
-                            let xPosition = -141 + Double(index) * 47
-                            let day = Calendar.current.component(.day, from: date)
-                            let isSelected = isToday(date)
-                            
-                            // Selection background
-                            if isSelected {
+                    // Compact Week View (Default)
+                    if !showFullCalendar {
+                        VStack(spacing: 12) {
+                            ZStack {
+                                // Background card
                                 Rectangle()
                                     .foregroundColor(.clear)
-                                    .frame(width: 44, height: 76)
-                                    .background(Color(red: 1, green: 0.44, blue: 0.16))
-                                    .cornerRadius(12)
-                                    .offset(x: xPosition, y: 20)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 148)
+                                    .background(Color.cardSurface)
+                                    .cornerRadius(24)
+                                    .shadow(
+                                        color: Color.black.opacity(0.08),
+                                        radius: 12,
+                                        x: 0,
+                                        y: 4
+                                    )
+                                
+                                // Date title with year picker
+                                Button(action: {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                        showYearPicker.toggle()
+                                    }
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Text(monthYearString(from: selectedDate))
+                                            .font(Font.custom("Inter", size: 20).weight(.semibold))
+                                            .foregroundColor(.textColor)
+                                        
+                                        Image(systemName: showYearPicker ? "chevron.up" : "chevron.down")
+                                            .font(.system(size: 12, weight: .semibold))
+                                            .foregroundColor(.actionColor)
+                                    }
+                                }
+                                .offset(x: -76, y: -44)
+                                
+                                // Navigation arrows
+                                HStack(spacing: 16) {
+                                    Button(action: {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            selectedDate = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: selectedDate) ?? selectedDate
+                                            currentMonth = selectedDate
+                                        }
+                                    }) {
+                                        Image(systemName: "chevron.left")
+                                            .foregroundColor(.actionColor)
+                                            .frame(width: 24, height: 24)
+                                    }
+                                    
+                                    Button(action: {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            selectedDate = Calendar.current.date(byAdding: .weekOfYear, value: 1, to: selectedDate) ?? selectedDate
+                                            currentMonth = selectedDate
+                                        }
+                                    }) {
+                                        Image(systemName: "chevron.right")
+                                            .foregroundColor(.actionColor)
+                                            .frame(width: 24, height: 24)
+                                    }
+                                }
+                                .offset(x: 85, y: -44)
+                                
+                                // Expand button
+                                Button(action: {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                        showFullCalendar = true
+                                        currentMonth = selectedDate
+                                        showYearPicker = false
+                                    }
+                                }) {
+                                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                        .foregroundColor(.actionColor)
+                                        .frame(width: 24, height: 24)
+                                }
+                                .offset(x: 145, y: -44)
+                                
+                                // Week days and dates
+                                let dates = weekDates()
+                                ForEach(Array(dates.enumerated()), id: \.offset) { index, date in
+                                    let xPosition = -141 + Double(index) * 47
+                                    let day = Calendar.current.component(.day, from: date)
+                                    let isSelected = Calendar.current.isDate(date, inSameDayAs: selectedDate)
+                                    let hasPhotos = viewModel.hasPhotos(for: date)
+                                    
+                                    // Selection background
+                                    if isSelected {
+                                        Rectangle()
+                                            .foregroundColor(.clear)
+                                            .frame(width: 44, height: 76)
+                                            .background(Color(red: 1, green: 0.44, blue: 0.16))
+                                            .cornerRadius(12)
+                                            .offset(x: xPosition, y: 20)
+                                    }
+                                    
+                                    // Day letter
+                                    Text(weekDays[index])
+                                        .font(Font.custom("Inter", size: 15))
+                                        .tracking(0.30)
+                                        .lineSpacing(20)
+                                        .foregroundColor(isSelected ? .white : .subTextColor)
+                                        .offset(x: xPosition, y: 4)
+                                    
+                                    // Day number (tappable)
+                                    Button(action: {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                            selectedDate = date
+                                        }
+                                    }) {
+                                        VStack(spacing: 4) {
+                                            Text("\(day)")
+                                                .font(Font.custom("Inter", size: 16).weight(.bold))
+                                                .tracking(0.30)
+                                                .lineSpacing(20)
+                                                .foregroundColor(isSelected ? .white : .textColor)
+                                            
+                                            // Orange dot for photos
+                                            if hasPhotos {
+                                                Circle()
+                                                    .fill(isSelected ? Color.white : Color.actionColor)
+                                                    .frame(width: 5, height: 5)
+                                            }
+                                        }
+                                    }
+                                    .offset(x: xPosition, y: 36)
+                                }
                             }
+                            .frame(height: 148)
                             
-                            // Day letter
-                            Text(weekDays[index])
-                                .font(Font.custom("Inter", size: 15))
-                                .tracking(0.30)
-                                .lineSpacing(20)
-                                .foregroundColor(isSelected ? .white : .subTextColor)
-                                .offset(x: xPosition, y: 4)
-                            
-                            // Day number (tappable)
-                            Button(action: {
-                                selectedDate = date
-                            }) {
-                                Text("\(day)")
-                                    .font(Font.custom("Inter", size: 16).weight(.bold))
-                                    .tracking(0.30)
-                                    .lineSpacing(20)
-                                    .foregroundColor(isSelected ? .white : .textColor)
+                            // Year Picker for Compact View
+                            if showYearPicker {
+                                VStack(spacing: 0) {
+                                    Divider()
+                                        .padding(.bottom, 12)
+                                    
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 12) {
+                                            ForEach(yearRange(), id: \.self) { year in
+                                                Button(action: {
+                                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                                        let calendar = Calendar.current
+                                                        var components = calendar.dateComponents([.year, .month, .day], from: selectedDate)
+                                                        components.year = year
+                                                        if let newDate = calendar.date(from: components) {
+                                                            selectedDate = newDate
+                                                            currentMonth = newDate
+                                                        }
+                                                        showYearPicker = false
+                                                    }
+                                                }) {
+                                                    Text(String(year))
+                                                        .font(.system(size: 16, weight: currentYearForDate(selectedDate) == year ? .bold : .regular))
+                                                        .foregroundColor(currentYearForDate(selectedDate) == year ? .white : .textColor)
+                                                        .padding(.horizontal, 20)
+                                                        .padding(.vertical, 10)
+                                                        .background(
+                                                            RoundedRectangle(cornerRadius: 12)
+                                                                .fill(currentYearForDate(selectedDate) == year ? Color.actionColor : Color.cardBackground)
+                                                        )
+                                                }
+                                            }
+                                        }
+                                        .padding(.horizontal, 4)
+                                    }
+                                    .frame(height: 50)
+                                }
+                                .padding(.horizontal, 20)
                             }
-                            .offset(x: xPosition, y: 36)
                         }
+                        .padding(.horizontal, 20)
                     }
-                    .frame(height: 148)
-                    .padding(.horizontal, 20)
+                    
+                    // Full Month Calendar View (Expandable)
+                    if showFullCalendar {
+                        VStack(spacing: 12) {
+                            // Calendar Grid Card
+                            VStack(spacing: 16) {
+                                // Header: Month/Year on left, arrows on right, collapse button
+                                HStack(spacing: 0) {
+                                    // Month/Year (tappable)
+                                    Button(action: {
+                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                            showYearPicker.toggle()
+                                        }
+                                    }) {
+                                        HStack(spacing: 4) {
+                                            Text(monthYearString(from: currentMonth))
+                                                .font(Font.custom("Inter", size: 20).weight(.semibold))
+                                                .foregroundColor(.textColor)
+                                            
+                                            Image(systemName: showYearPicker ? "chevron.up" : "chevron.down")
+                                                .font(.system(size: 12, weight: .semibold))
+                                                .foregroundColor(.actionColor)
+                                        }
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    // Navigation arrows
+                                    HStack(spacing: 16) {
+                                        Button(action: {
+                                            withAnimation(.easeInOut(duration: 0.3)) {
+                                                currentMonth = Calendar.current.date(byAdding: .month, value: -1, to: currentMonth) ?? currentMonth
+                                            }
+                                        }) {
+                                            Image(systemName: "chevron.left")
+                                                .foregroundColor(.actionColor)
+                                                .frame(width: 24, height: 24)
+                                        }
+                                        
+                                        Button(action: {
+                                            withAnimation(.easeInOut(duration: 0.3)) {
+                                                currentMonth = Calendar.current.date(byAdding: .month, value: 1, to: currentMonth) ?? currentMonth
+                                            }
+                                        }) {
+                                            Image(systemName: "chevron.right")
+                                                .foregroundColor(.actionColor)
+                                                .frame(width: 24, height: 24)
+                                        }
+                                    }
+                                    
+                                    Spacer()
+                                        .frame(width: 16)
+                                    
+                                    // Collapse button
+                                    Button(action: {
+                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                            showFullCalendar = false
+                                            showYearPicker = false
+                                        }
+                                    }) {
+                                        Image(systemName: "arrow.down.right.and.arrow.up.left")
+                                            .foregroundColor(.actionColor)
+                                            .frame(width: 24, height: 24)
+                                    }
+                                }
+                                .frame(height: 44)
+                                .offset(y: -12)
+                                
+                                // Year Picker (Expandable)
+                                if showYearPicker {
+                                    VStack(spacing: 0) {
+                                        ScrollView(.horizontal, showsIndicators: false) {
+                                            HStack(spacing: 12) {
+                                                ForEach(yearRange(), id: \.self) { year in
+                                                    Button(action: {
+                                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                                            let calendar = Calendar.current
+                                                            var components = calendar.dateComponents([.year, .month, .day], from: currentMonth)
+                                                            components.year = year
+                                                            if let newDate = calendar.date(from: components) {
+                                                                currentMonth = newDate
+                                                                // Update selectedDate to match the new month/year
+                                                                var selectedComponents = calendar.dateComponents([.year, .month, .day], from: selectedDate)
+                                                                selectedComponents.year = year
+                                                                selectedComponents.month = components.month
+                                                                if let newSelectedDate = calendar.date(from: selectedComponents) {
+                                                                    selectedDate = newSelectedDate
+                                                                }
+                                                            }
+                                                            showYearPicker = false
+                                                        }
+                                                    }) {
+                                                        Text(String(year))
+                                                            .font(.system(size: 16, weight: currentYear() == year ? .bold : .regular))
+                                                            .foregroundColor(currentYear() == year ? .white : .textColor)
+                                                            .padding(.horizontal, 20)
+                                                            .padding(.vertical, 10)
+                                                            .background(
+                                                                RoundedRectangle(cornerRadius: 12)
+                                                                    .fill(currentYear() == year ? Color.actionColor : Color.cardBackground)
+                                                            )
+                                                    }
+                                                }
+                                            }
+                                            .padding(.horizontal, 4)
+                                        }
+                                        .frame(height: 50)
+                                        
+                                        Divider()
+                                            .padding(.top, 12)
+                                    }
+                                }
+                                
+                                // Week day headers
+                                HStack(spacing: 0) {
+                                    ForEach(weekDaysFull, id: \.self) { day in
+                                        Text(day)
+                                            .font(.system(size: 12, weight: .semibold))
+                                            .foregroundColor(.subTextColor)
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                }
+                                .padding(.bottom, 8)
+                                
+                                // Calendar days grid
+                                LazyVGrid(columns: columns, spacing: 12) {
+                                    ForEach(daysInMonth(), id: \.self) { date in
+                                        if let date = date {
+                                            CalendarDayCell(
+                                                date: date,
+                                                isSelected: Calendar.current.isDate(date, inSameDayAs: selectedDate),
+                                                isToday: Calendar.current.isDateInToday(date),
+                                                hasPhotos: viewModel.hasPhotos(for: date)
+                                            )
+                                            .onTapGesture {
+                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                    selectedDate = date
+                                                }
+                                            }
+                                        } else {
+                                            // Empty cell for days not in current month
+                                            Color.clear
+                                                .frame(height: 50)
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(20)
+                            .background(Color.cardSurface)
+                            .cornerRadius(24)
+                            .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 4)
+                        }
+                        .padding(.horizontal, 20)
+                    }
                     
                     // My Analysis Section
                     VStack(alignment: .leading, spacing: 20) {
@@ -244,8 +490,45 @@ struct CalendarView: View {
     // Helper functions
     private func monthYearString(from date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "dd MMMM"
+        formatter.dateFormat = "MMMM yyyy"
         return formatter.string(from: date)
+    }
+    
+    private func currentYear() -> Int {
+        return Calendar.current.component(.year, from: currentMonth)
+    }
+    
+    private func currentYearForDate(_ date: Date) -> Int {
+        return Calendar.current.component(.year, from: date)
+    }
+    
+    private func yearRange() -> [Int] {
+        let currentYear = Calendar.current.component(.year, from: Date())
+        // Show years from 10 years ago to current year
+        return Array((currentYear - 10)...currentYear).reversed()
+    }
+    
+    private func daysInMonth() -> [Date?] {
+        let calendar = Calendar.current
+        let interval = calendar.dateInterval(of: .month, for: currentMonth)!
+        let firstWeekday = calendar.component(.weekday, from: interval.start)
+        let daysInMonth = calendar.range(of: .day, in: .month, for: currentMonth)!.count
+        
+        var days: [Date?] = []
+        
+        // Add empty cells for days before the first day of the month
+        for _ in 1..<firstWeekday {
+            days.append(nil)
+        }
+        
+        // Add all days of the month
+        for day in 1...daysInMonth {
+            if let date = calendar.date(bySetting: .day, value: day, of: currentMonth) {
+                days.append(date)
+            }
+        }
+        
+        return days
     }
     
     private func weekDates() -> [Date] {
@@ -261,6 +544,51 @@ struct CalendarView: View {
     
     private func isToday(_ date: Date) -> Bool {
         Calendar.current.isDate(date, inSameDayAs: selectedDate)
+    }
+}
+
+// Calendar Day Cell Component
+struct CalendarDayCell: View {
+    let date: Date
+    let isSelected: Bool
+    let isToday: Bool
+    let hasPhotos: Bool
+    
+    private var day: Int {
+        Calendar.current.component(.day, from: date)
+    }
+    
+    var body: some View {
+        VStack(spacing: 6) {
+            Text("\(day)")
+                .font(.system(size: 16, weight: isSelected ? .bold : .regular))
+                .foregroundColor(isSelected ? .white : (isToday ? .actionColor : .textColor))
+                .frame(width: 40, height: 40)
+                .background(
+                    Group {
+                        if isSelected {
+                            Circle()
+                                .fill(Color.actionColor)
+                        } else if isToday {
+                            Circle()
+                                .stroke(Color.actionColor, lineWidth: 2)
+                        }
+                    }
+                )
+            
+            // Orange dot indicator for photos
+            if hasPhotos {
+                Circle()
+                    .fill(isSelected ? Color.white : Color.actionColor)
+                    .frame(width: 6, height: 6)
+            } else {
+                // Spacer to maintain consistent height
+                Circle()
+                    .fill(Color.clear)
+                    .frame(width: 6, height: 6)
+            }
+        }
+        .frame(height: 50)
     }
 }
 

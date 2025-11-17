@@ -53,6 +53,7 @@ struct UserProfileHeader: View {
                 .padding(.vertical, 4)
                 .background(Color.cardBackground)
                 .cornerRadius(25)
+                .offset(x: -4)
             }
             .buttonStyle(.plain)
             
@@ -73,7 +74,7 @@ struct UserProfileHeader: View {
                         Circle()
                             .fill(Color(red: 1.0, green: 0.45, blue: 0.2))
                             .frame(width: 8, height: 8)
-                            .offset(x: 10, y: -8)
+                            .offset(x: 9, y: -10)
                     }
                 }
             }

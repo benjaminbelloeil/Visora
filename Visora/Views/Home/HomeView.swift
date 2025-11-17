@@ -38,7 +38,7 @@ struct HomeView: View {
                             } else if !profileViewModel.userProfile.name.isEmpty {
                                 return profileViewModel.userProfile.name
                             } else {
-                                return "Guest"
+                                return "Traveler"
                             }
                         }(),
                         profileImage: profileViewModel.userProfile.profileImage,
@@ -50,8 +50,7 @@ struct HomeView: View {
                             selectedTab = 4 // Navigate to Profile tab
                         }
                     )
-                    .padding(.horizontal, 13)
-                    .padding(.top, -50)
+                    .padding(.horizontal, 20)
                     
                     // Hero Title Section
                     VStack(alignment: .leading, spacing: 4) {
@@ -184,7 +183,7 @@ struct HomeView: View {
                         }
                     }
                 }
-                .padding(.vertical, 8)
+                .padding(.vertical, -39)
             }
             .background(Color.appBackground)
             .onAppear {

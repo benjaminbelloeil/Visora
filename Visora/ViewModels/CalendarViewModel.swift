@@ -101,6 +101,12 @@ class CalendarViewModel: ObservableObject {
         return photosByDate[startOfDay]
     }
     
+    func hasPhotos(for date: Date) -> Bool {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        return photosByDate[startOfDay] != nil && !photosByDate[startOfDay]!.isEmpty
+    }
+    
     // Add GPS coordinates to photos that don't have them (using current location)
     func addGPSToPhotosWithoutLocation(currentLocation: CLLocationCoordinate2D) async {
         var updatedPhotos: [PhotoEntry] = []
