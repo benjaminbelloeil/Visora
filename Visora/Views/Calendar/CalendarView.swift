@@ -102,7 +102,7 @@ struct CalendarView: View {
                                             .foregroundColor(.actionColor)
                                     }
                                 }
-                                .offset(x: -76, y: -44)
+                                .offset(x: -76.6, y: -44)
                                 
                                 // Navigation arrows
                                 HStack(spacing: 16) {
@@ -128,7 +128,7 @@ struct CalendarView: View {
                                             .frame(width: 24, height: 24)
                                     }
                                 }
-                                .offset(x: 85, y: -44)
+                                .offset(x: 84.6, y: -44)
                                 
                                 // Expand button
                                 Button(action: {
@@ -198,10 +198,8 @@ struct CalendarView: View {
                             
                             // Year Picker for Compact View
                             if showYearPicker {
-                                VStack(spacing: 0) {
-                                    Divider()
-                                        .padding(.bottom, 12)
-                                    
+                                ZStack {
+                                    // Scrollable year buttons
                                     ScrollView(.horizontal, showsIndicators: false) {
                                         HStack(spacing: 12) {
                                             ForEach(yearRange(), id: \.self) { year in
@@ -232,8 +230,40 @@ struct CalendarView: View {
                                         .padding(.horizontal, 4)
                                     }
                                     .frame(height: 50)
+
+                                    // Left and right blur fade overlays
+                                    HStack(spacing: 0) {
+                                        // Left fade
+                                        LinearGradient(
+                                            colors: [
+                                                Color.appBackground.opacity(0.9),
+                                                Color.appBackground.opacity(0.5),
+                                                Color.appBackground.opacity(0.0)
+                                            ],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                        .frame(width: 40)
+                                        .allowsHitTesting(false)
+
+                                        Spacer()
+
+                                        // Right fade
+                                        LinearGradient(
+                                            colors: [
+                                                Color.appBackground.opacity(0.0),
+                                                Color.appBackground.opacity(0.5),
+                                                Color.appBackground.opacity(0.9)
+                                            ],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                        .frame(width: 40)
+                                        .allowsHitTesting(false)
+                                    }
                                 }
-                                .padding(.horizontal, 20)
+                                .padding(.horizontal, 8)
+                                .padding(.top, 12)
                             }
                         }
                         .padding(.horizontal, 20)
